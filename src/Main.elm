@@ -1,9 +1,9 @@
-module Semaphore exposing (..)
+module Main exposing (..)
 
 import Html exposing (div, button, text, table, tr, th, td)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
-import Signal
+import KsSignal
 import Messages exposing (..)
 
 
@@ -19,20 +19,20 @@ type Language
 
 
 type alias Model =
-    { distantSignal : Signal.Model
-    , signalRepeater : Signal.Model
-    , combinationSignal : Signal.Model
-    , mainSignal : Signal.Model
+    { distantSignal : KsSignal.Model
+    , signalRepeater : KsSignal.Model
+    , combinationSignal : KsSignal.Model
+    , mainSignal : KsSignal.Model
     , language : Language
     }
 
 
 init : Model
 init =
-    { distantSignal = Signal.distantSignal
-    , signalRepeater = Signal.signalRepeater
-    , combinationSignal = Signal.combinationSignal
-    , mainSignal = Signal.mainSignal
+    { distantSignal = KsSignal.distantSignal
+    , signalRepeater = KsSignal.signalRepeater
+    , combinationSignal = KsSignal.combinationSignal
+    , mainSignal = KsSignal.mainSignal
     , language = German
     }
 
@@ -43,13 +43,13 @@ update msg model =
         FirstSignalMsg signalmsg ->
             let
                 newDistantSignal =
-                    Signal.update (ToDistantSignal signalmsg) model.distantSignal
+                    KsSignal.update (ToDistantSignal signalmsg) model.distantSignal
 
                 newSignalRepeater =
-                    Signal.update (ToDistantSignal signalmsg) model.signalRepeater
+                    KsSignal.update (ToDistantSignal signalmsg) model.signalRepeater
 
                 newCombinationSignal =
-                    Signal.update (ToMainSignal signalmsg) model.combinationSignal
+                    KsSignal.update (ToMainSignal signalmsg) model.combinationSignal
             in
                 { model
                     | distantSignal = newDistantSignal
@@ -60,10 +60,10 @@ update msg model =
         SecondSignalMsg signalmsg ->
             let
                 newCombinationSignal =
-                    Signal.update (ToDistantSignal signalmsg) model.combinationSignal
+                    KsSignal.update (ToDistantSignal signalmsg) model.combinationSignal
 
                 newMainSignal =
-                    Signal.update (ToMainSignal signalmsg) model.mainSignal
+                    KsSignal.update (ToMainSignal signalmsg) model.mainSignal
             in
                 { model
                     | combinationSignal = newCombinationSignal
@@ -112,10 +112,10 @@ view model =
                     ]
                 ]
             , tr []
-                [ td [] [ Html.map FirstSignalMsg (Signal.view model.distantSignal) ]
-                , td [] [ Html.map FirstSignalMsg (Signal.view model.signalRepeater) ]
-                , td [] [ Html.map FirstSignalMsg (Signal.view model.combinationSignal) ]
-                , td [] [ Html.map FirstSignalMsg (Signal.view model.mainSignal) ]
+                [ td [] [ Html.map FirstSignalMsg (KsSignal.view model.distantSignal) ]
+                , td [] [ Html.map FirstSignalMsg (KsSignal.view model.signalRepeater) ]
+                , td [] [ Html.map FirstSignalMsg (KsSignal.view model.combinationSignal) ]
+                , td [] [ Html.map FirstSignalMsg (KsSignal.view model.mainSignal) ]
                 ]
             ]
         ]

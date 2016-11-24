@@ -1,4 +1,4 @@
-module Signal exposing (..)
+module KsSignal exposing (..)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
