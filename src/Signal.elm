@@ -64,16 +64,52 @@ update target model =
 
 view model =
     svg [ version "1.1", viewBox "0 0 70 200", width "200" ]
-        [ rect [ width "64", height "120", x "0", y "0", Svg.Attributes.style "fill:black; stroke: none" ] []
-        , case model of
-            DistantSignal signal ->
-                viewDistantSignal signal
+        [ Svg.style []
+            [ text """
+                    circle { stroke-width: 0.25; stroke-opacity: 0.85; stroke: #333; }
+                    .green { fill:url(#green-gradient) }
+                    .red { fill:url(#red-gradient);  }
+                    .orange { fill:url(#orange-gradient) }
+                    .yellow { fill:url(#yellow-gradient) }
+                    .white { fill:url(#white-gradient) }
+                    circle.on { fill-opacity: 1; transition: fill-opacity .1s ease-in; transition-delay: .2s }
+                    circle.off { fill-opacity: 0; transition: fill-opacity .3s ease-out }
+                    """
+            ]
+        , defs []
+            [ radialGradient [ id "green-gradient" ]
+                [ stop [ stopColor "#33ff6d", offset "0.05" ] []
+                , stop [ stopColor "#00bd4a", offset "0.9" ] []
+                ]
+            , radialGradient [ id "red-gradient" ]
+                [ stop [ stopColor "#ff3763", offset "0.05" ] []
+                , stop [ stopColor "#da012a", offset "0.9" ] []
+                ]
+            , radialGradient [ id "orange-gradient" ]
+                [ stop [ stopColor "#ffc955", offset "0.05" ] []
+                , stop [ stopColor "#fc8e00", offset "0.9" ] []
+                ]
+            , radialGradient [ id "yellow-gradient" ]
+                [ stop [ stopColor "#ffe060", offset "0.05" ] []
+                , stop [ stopColor "#fac412", offset "0.9" ] []
+                ]
+            , radialGradient [ id "white-gradient" ]
+                [ stop [ stopColor "#fffaef", offset "0.05" ] []
+                , stop [ stopColor "#ebe6d8", offset "0.9" ] []
+                ]
+            ]
+        , g [ transform "translate(3)" ]
+            [ rect [ width "64", height "120", x "0", y "0", Svg.Attributes.style "fill:black; stroke: none" ] []
+            , case model of
+                DistantSignal signal ->
+                    viewDistantSignal signal
 
-            CombinationSignal signal ->
-                viewCombinationLights signal
+                CombinationSignal signal ->
+                    viewCombinationLights signal
 
-            MainSignal signal ->
-                viewMainLights signal
+                MainSignal signal ->
+                    viewMainLights signal
+            ]
         ]
 
 
@@ -83,11 +119,11 @@ viewMainLights signal =
             [ cx "32"
             , cy "32"
             , r "7.5"
-            , Svg.Attributes.style
+            , class
                 (if signal.mainState == Stop then
-                    "fill:#da012a"
+                    "red on"
                  else
-                    "fill:#111"
+                    "red off"
                 )
             ]
             []
@@ -95,11 +131,11 @@ viewMainLights signal =
             [ cx "32"
             , cy "57.3"
             , r "7.5"
-            , Svg.Attributes.style
+            , class
                 (if signal.mainState == Proceed then
-                    "fill:#02da53"
+                    "green on"
                  else
-                    "fill:#111"
+                    "green off"
                 )
             ]
             []
@@ -112,11 +148,11 @@ viewCombinationLights signal =
             [ cx "32"
             , cy "32"
             , r "7.5"
-            , Svg.Attributes.style
+            , class
                 (if signal.mainState == Stop then
-                    "fill:#da012a"
+                    "red on"
                  else
-                    "fill:#111"
+                    "red off"
                 )
             ]
             []
@@ -124,11 +160,11 @@ viewCombinationLights signal =
             [ cx "47.5"
             , cy "57.3"
             , r "7.5"
-            , Svg.Attributes.style
+            , class
                 (if (signal.mainState == Proceed && signal.distantState == Stop) then
-                    "fill:#f08700"
+                    "orange on"
                  else
-                    "fill:#111"
+                    "orange off"
                 )
             ]
             []
@@ -136,11 +172,11 @@ viewCombinationLights signal =
             [ cx "16.5"
             , cy "57.3"
             , r "7.5"
-            , Svg.Attributes.style
+            , class
                 (if (signal.mainState == Proceed && signal.distantState == Proceed) then
-                    "fill:#02da53"
+                    "green on"
                  else
-                    "fill:#111"
+                    "green off"
                 )
             ]
             []
@@ -153,11 +189,11 @@ viewDistantSignal signal =
             [ cx "47.5"
             , cy "57.3"
             , r "7.5"
-            , Svg.Attributes.style
+            , class
                 (if signal.distantState == Stop then
-                    "fill:#f08700"
+                    "orange on"
                  else
-                    "fill:#111"
+                    "orange off"
                 )
             ]
             []
@@ -165,24 +201,27 @@ viewDistantSignal signal =
             [ cx "16.5"
             , cy "57.3"
             , r "7.5"
-            , Svg.Attributes.style
+            , class
                 (if signal.distantState == Proceed then
-                    "fill:#02da53"
+                    "green on"
                  else
-                    "fill:#111"
+                    "green off"
                 )
             ]
             []
-        , circle
-            [ cx "11.5"
-            , cy "98.7"
-            , r "3.5"
-            , Svg.Attributes.style
-                (if (signal.repeater && signal.distantState == Stop) then
-                    "fill:#d8d8d8"
-                 else
-                    "fill:#111"
-                )
-            ]
-            []
+        , if signal.repeater then
+            circle
+                [ cx "11.5"
+                , cy "98.7"
+                , r "3.5"
+                , class
+                    (if signal.distantState == Stop then
+                        "white on"
+                     else
+                        "white off"
+                    )
+                ]
+                []
+          else
+            g [] []
         ]
