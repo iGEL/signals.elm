@@ -103,14 +103,19 @@ view model =
     svg [ version "1.1", viewBox "0 0 70 200", width "200" ]
         [ Svg.style []
             [ text """
-                    circle { stroke-width: 0.25; stroke-opacity: 0.85; stroke: #333; }
+                    circle { stroke-width: 0.4; stroke-opacity: 0.85; stroke: #333; }
                     .green { fill:url(#green-gradient) }
+                    .green.on { filter: drop-shadow(0 0 5px #00bd4a) }
                     .red { fill:url(#red-gradient);  }
+                    .red.on { filter: drop-shadow(0 0 5px #da012a) }
                     .orange { fill:url(#orange-gradient) }
+                    .orange.on { filter: drop-shadow(0 0 5px #fc8e00) }
                     .yellow { fill:url(#yellow-gradient) }
+                    .yellow.on { filter: drop-shadow(0 0 5px #fac412) }
                     .white { fill:url(#white-gradient) }
-                    circle.on { fill-opacity: 1; transition: fill-opacity .1s ease-in; transition-delay: .2s }
-                    circle.off { fill-opacity: 0; transition: fill-opacity .3s ease-out }
+                    .white.on { filter: drop-shadow(0 0 5px #ebe6d8) }
+                    circle.on { fill-opacity: 1; transition: fill-opacity .05s ease-in; transition-delay: .1s }
+                    circle.off { fill-opacity: 0; transition: fill-opacity .2s ease-out }
                     """
             ]
         , defs []
