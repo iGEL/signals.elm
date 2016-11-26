@@ -15,8 +15,9 @@ type Model
         { distantState : Messages.Msg
         , mainState : Messages.Msg
         , shortBrakePath : Bool
+        , blink : Bool
         }
-    | MainSignal { mainState : Messages.Msg }
+    | MainSignal { mainState : Messages.Msg, blink : Bool }
 
 
 distantSignal : Model
@@ -43,12 +44,13 @@ combinationSignal =
         { distantState = Stop
         , mainState = Stop
         , shortBrakePath = False
+        , blink = False
         }
 
 
 mainSignal : Model
 mainSignal =
-    MainSignal { mainState = Stop }
+    MainSignal { mainState = Stop, blink = False }
 
 
 update : Messages.Target -> Model -> Model
@@ -60,6 +62,9 @@ update target model =
                     case newState of
                         ToggleShortBrakePath ->
                             DistantSignal { representation | shortBrakePath = not representation.shortBrakePath }
+
+                        ToggleBlink ->
+                            model
 
                         _ ->
                             DistantSignal { representation | distantState = newState }
@@ -74,6 +79,9 @@ update target model =
                         ToggleShortBrakePath ->
                             CombinationSignal { representation | shortBrakePath = not representation.shortBrakePath }
 
+                        ToggleBlink ->
+                            model
+
                         _ ->
                             CombinationSignal { representation | distantState = newState }
 
@@ -81,6 +89,9 @@ update target model =
                     case newState of
                         ToggleShortBrakePath ->
                             model
+
+                        ToggleBlink ->
+                            CombinationSignal { representation | blink = not representation.blink }
 
                         _ ->
                             CombinationSignal { representation | mainState = newState }
@@ -91,6 +102,9 @@ update target model =
                     case newState of
                         ToggleShortBrakePath ->
                             model
+
+                        ToggleBlink ->
+                            MainSignal { representation | blink = not representation.blink }
 
                         _ ->
                             MainSignal { representation | mainState = newState }
@@ -159,6 +173,7 @@ viewMainLights signal =
     g []
         [ bigLamp "red" (isStop signal) "32" "32"
         , bigLamp "green" (isProceed signal) "32" "57.3"
+        , smallLamp "white" (isZs1 signal && signal.blink) "32" "81"
         ]
 
 
@@ -167,6 +182,7 @@ viewCombinationLights signal =
         [ bigLamp "red" (isStop signal) "32" "32"
         , bigLamp "orange" (isProceed signal && isExpectStop signal) "47.5" "57.3"
         , bigLamp "green" (isProceed signal && isExpectProceed signal) "16.5" "57.3"
+        , smallLamp "white" (isZs1 signal && signal.blink) "32" "81"
         , if signal.shortBrakePath then
             smallLamp "white" (isProceed signal && isExpectStop signal) "16.5" "14.5"
           else
@@ -190,7 +206,7 @@ viewDistantSignal signal =
 
 
 isStop lights =
-    lights.mainState == Stop
+    lights.mainState == Stop || lights.mainState == StopAndZs1
 
 
 isProceed lights =
@@ -198,11 +214,15 @@ isProceed lights =
 
 
 isExpectStop lights =
-    lights.distantState == Stop
+    lights.distantState == Stop || lights.distantState == StopAndZs1
 
 
 isExpectProceed lights =
     lights.distantState == Proceed
+
+
+isZs1 lights =
+    lights.mainState == StopAndZs1
 
 
 lamp color on x y radius =

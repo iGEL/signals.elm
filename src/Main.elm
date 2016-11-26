@@ -3,6 +3,7 @@ module Main exposing (..)
 import Html exposing (div, button, label, input, text, table, tr, th, td)
 import Html.Attributes exposing (style, type_, checked)
 import Html.Events exposing (onClick)
+import Time exposing (Time, second)
 import KsSignal
 import Messages exposing (..)
 
@@ -27,17 +28,19 @@ type alias Model =
     }
 
 
-init : Model
+init : ( Model, Cmd Msg )
 init =
-    { distantSignal = KsSignal.distantSignal
-    , signalRepeater = KsSignal.signalRepeater
-    , combinationSignal = KsSignal.combinationSignal
-    , mainSignal = KsSignal.mainSignal
-    , language = German
-    }
+    ( { distantSignal = KsSignal.distantSignal
+      , signalRepeater = KsSignal.signalRepeater
+      , combinationSignal = KsSignal.combinationSignal
+      , mainSignal = KsSignal.mainSignal
+      , language = German
+      }
+    , Cmd.none
+    )
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FirstSignalMsg signalmsg ->
@@ -51,11 +54,13 @@ update msg model =
                 newCombinationSignal =
                     KsSignal.update (ToMainSignal signalmsg) model.combinationSignal
             in
-                { model
+                ( { model
                     | distantSignal = newDistantSignal
                     , signalRepeater = newSignalRepeater
                     , combinationSignal = newCombinationSignal
-                }
+                  }
+                , Cmd.none
+                )
 
         SecondSignalMsg signalmsg ->
             let
@@ -65,13 +70,22 @@ update msg model =
                 newMainSignal =
                     KsSignal.update (ToMainSignal signalmsg) model.mainSignal
             in
-                { model
+                ( { model
                     | combinationSignal = newCombinationSignal
                     , mainSignal = newMainSignal
-                }
+                  }
+                , Cmd.none
+                )
 
         SwitchLanguage language ->
-            { model | language = language }
+            ( { model | language = language }, Cmd.none )
+
+
+subscriptions model =
+    Sub.batch
+        [ Time.every second (\n -> FirstSignalMsg ToggleBlink)
+        , Time.every second (\n -> SecondSignalMsg ToggleBlink)
+        ]
 
 
 translate model german english =
@@ -127,6 +141,8 @@ view model =
                             [ translate model "Halt" "Stop" ]
                         , button [ onClick (FirstSignalMsg Proceed) ]
                             [ translate model "Fahrt" "Proceed" ]
+                        , button [ onClick (FirstSignalMsg StopAndZs1) ]
+                            [ translate model "Halt + Zs 1" "Stop + Zs 1" ]
                         ]
                     , label []
                         [ input
@@ -143,6 +159,8 @@ view model =
                         [ translate model "Halt" "Stop" ]
                     , button [ onClick (SecondSignalMsg Proceed) ]
                         [ translate model "Fahrt" "Proceed" ]
+                    , button [ onClick (SecondSignalMsg StopAndZs1) ]
+                        [ translate model "Halt + Zs 1" "Stop + Zs 1" ]
                     ]
                 ]
             , tr []
@@ -156,4 +174,9 @@ view model =
 
 
 main =
-    Html.beginnerProgram { model = init, view = view, update = update }
+    Html.program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
