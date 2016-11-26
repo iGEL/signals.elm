@@ -155,6 +155,40 @@ view model =
         ]
 
 
+viewMainLights signal =
+    g []
+        [ bigLamp "red" (isStop signal) "32" "32"
+        , bigLamp "green" (isProceed signal) "32" "57.3"
+        ]
+
+
+viewCombinationLights signal =
+    g []
+        [ bigLamp "red" (isStop signal) "32" "32"
+        , bigLamp "orange" (isProceed signal && isExpectStop signal) "47.5" "57.3"
+        , bigLamp "green" (isProceed signal && isExpectProceed signal) "16.5" "57.3"
+        , if signal.shortBrakePath then
+            smallLamp "white" (isProceed signal && isExpectStop signal) "16.5" "14.5"
+          else
+            g [] []
+        ]
+
+
+viewDistantSignal signal =
+    g []
+        [ bigLamp "orange" (isExpectStop signal) "47.5" "57.3"
+        , bigLamp "green" (isExpectProceed signal) "16.5" "57.3"
+        , if signal.repeater then
+            smallLamp "white" (isExpectStop signal) "11.5" "98.7"
+          else
+            g [] []
+        , if (not signal.repeater && signal.shortBrakePath) then
+            smallLamp "white" (isExpectStop signal) "16.5" "14.5"
+          else
+            g [] []
+        ]
+
+
 isStop lights =
     lights.mainState == Stop
 
@@ -171,145 +205,31 @@ isExpectProceed lights =
     lights.distantState == Proceed
 
 
-viewMainLights signal =
-    g []
-        [ circle
-            [ cx "32"
-            , cy "32"
-            , r "7.5"
+lamp color on x y radius =
+    let
+        onClass =
+            color ++ " on"
+
+        offClass =
+            color ++ " off"
+    in
+        circle
+            [ cx x
+            , cy y
+            , r radius
             , class
-                (if isStop signal then
-                    "red on"
+                (if on then
+                    onClass
                  else
-                    "red off"
+                    offClass
                 )
             ]
             []
-        , circle
-            [ cx "32"
-            , cy "57.3"
-            , r "7.5"
-            , class
-                (if isProceed signal then
-                    "green on"
-                 else
-                    "green off"
-                )
-            ]
-            []
-        ]
 
 
-viewCombinationLights signal =
-    g []
-        [ circle
-            [ cx "32"
-            , cy "32"
-            , r "7.5"
-            , class
-                (if isStop signal then
-                    "red on"
-                 else
-                    "red off"
-                )
-            ]
-            []
-        , circle
-            [ cx "47.5"
-            , cy "57.3"
-            , r "7.5"
-            , class
-                (if (isProceed signal && isExpectStop signal) then
-                    "orange on"
-                 else
-                    "orange off"
-                )
-            ]
-            []
-        , circle
-            [ cx "16.5"
-            , cy "57.3"
-            , r "7.5"
-            , class
-                (if (isProceed signal && isExpectProceed signal) then
-                    "green on"
-                 else
-                    "green off"
-                )
-            ]
-            []
-        , if signal.shortBrakePath then
-            circle
-                [ cx "16.5"
-                , cy "14.5"
-                , r "3.5"
-                , class
-                    (if (isProceed signal && isExpectStop signal) then
-                        "white on"
-                     else
-                        "white off"
-                    )
-                ]
-                []
-          else
-            g [] []
-        ]
+bigLamp color on x y =
+    lamp color on x y "7.5"
 
 
-viewDistantSignal signal =
-    g []
-        [ circle
-            [ cx "47.5"
-            , cy "57.3"
-            , r "7.5"
-            , class
-                (if isExpectStop signal then
-                    "orange on"
-                 else
-                    "orange off"
-                )
-            ]
-            []
-        , circle
-            [ cx "16.5"
-            , cy "57.3"
-            , r "7.5"
-            , class
-                (if isExpectProceed signal then
-                    "green on"
-                 else
-                    "green off"
-                )
-            ]
-            []
-        , if signal.repeater then
-            circle
-                [ cx "11.5"
-                , cy "98.7"
-                , r "3.5"
-                , class
-                    (if isExpectStop signal then
-                        "white on"
-                     else
-                        "white off"
-                    )
-                ]
-                []
-          else
-            g [] []
-        , if (not signal.repeater && signal.shortBrakePath) then
-            circle
-                [ cx "16.5"
-                , cy "14.5"
-                , r "3.5"
-                , class
-                    (if isExpectStop signal then
-                        "white on"
-                     else
-                        "white off"
-                    )
-                ]
-                []
-          else
-            g [] []
-        ]
+smallLamp color on x y =
+    lamp color on x y "3.5"
