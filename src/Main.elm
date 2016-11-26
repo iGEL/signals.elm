@@ -1,7 +1,7 @@
 module Main exposing (..)
 
-import Html exposing (div, button, text, table, tr, th, td)
-import Html.Attributes exposing (style)
+import Html exposing (div, button, label, input, text, table, tr, th, td)
+import Html.Attributes exposing (style, type_, checked)
 import Html.Events exposing (onClick)
 import KsSignal
 import Messages exposing (..)
@@ -83,6 +83,19 @@ translate model german english =
             text english
 
 
+shortBrakePath : KsSignal.Model -> Bool
+shortBrakePath model =
+    case model of
+        KsSignal.DistantSignal state ->
+            state.shortBrakePath
+
+        KsSignal.CombinationSignal state ->
+            state.shortBrakePath
+
+        _ ->
+            False
+
+
 view : Model -> Html.Html Msg
 view model =
     div []
@@ -96,13 +109,34 @@ view model =
                 , th [] [ translate model "Hauptsignal" "Main Signal" ]
                 ]
             , tr []
-                [ td [] []
+                [ td []
+                    [ label []
+                        [ input
+                            [ type_ "checkbox"
+                            , checked (shortBrakePath model.distantSignal)
+                            , onClick (FirstSignalMsg ToggleShortBrakePath)
+                            ]
+                            []
+                        , translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
+                        ]
+                    ]
                 , td [] []
                 , td [ style [ ( "text-align", "center" ) ] ]
-                    [ button [ onClick (FirstSignalMsg Stop) ]
-                        [ translate model "Halt" "Stop" ]
-                    , button [ onClick (FirstSignalMsg Proceed) ]
-                        [ translate model "Fahrt" "Proceed" ]
+                    [ div []
+                        [ button [ onClick (FirstSignalMsg Stop) ]
+                            [ translate model "Halt" "Stop" ]
+                        , button [ onClick (FirstSignalMsg Proceed) ]
+                            [ translate model "Fahrt" "Proceed" ]
+                        ]
+                    , label []
+                        [ input
+                            [ type_ "checkbox"
+                            , checked (shortBrakePath model.combinationSignal)
+                            , onClick (SecondSignalMsg ToggleShortBrakePath)
+                            ]
+                            []
+                        , translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
+                        ]
                     ]
                 , td [ style [ ( "text-align", "center" ) ] ]
                     [ button [ onClick (SecondSignalMsg Stop) ]

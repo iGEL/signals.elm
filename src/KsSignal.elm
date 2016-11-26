@@ -6,19 +6,35 @@ import Messages exposing (..)
 
 
 type Model
-    = DistantSignal { distantState : Messages.Msg, repeater : Bool }
-    | CombinationSignal { distantState : Messages.Msg, mainState : Messages.Msg }
+    = DistantSignal
+        { distantState : Messages.Msg
+        , repeater : Bool
+        , shortBrakePath : Bool
+        }
+    | CombinationSignal
+        { distantState : Messages.Msg
+        , mainState : Messages.Msg
+        , shortBrakePath : Bool
+        }
     | MainSignal { mainState : Messages.Msg }
 
 
 distantSignal : Model
 distantSignal =
-    DistantSignal { distantState = Stop, repeater = False }
+    DistantSignal
+        { distantState = Stop
+        , repeater = False
+        , shortBrakePath = False
+        }
 
 
 signalRepeater : Model
 signalRepeater =
-    DistantSignal { distantState = Stop, repeater = True }
+    DistantSignal
+        { distantState = Stop
+        , repeater = True
+        , shortBrakePath = False
+        }
 
 
 combinationSignal : Model
@@ -26,6 +42,7 @@ combinationSignal =
     CombinationSignal
         { distantState = Stop
         , mainState = Stop
+        , shortBrakePath = False
         }
 
 
@@ -40,7 +57,12 @@ update target model =
         DistantSignal representation ->
             case target of
                 ToDistantSignal newState ->
-                    DistantSignal { representation | distantState = newState }
+                    case newState of
+                        ToggleShortBrakePath ->
+                            DistantSignal { representation | shortBrakePath = not representation.shortBrakePath }
+
+                        _ ->
+                            DistantSignal { representation | distantState = newState }
 
                 _ ->
                     model
@@ -48,15 +70,30 @@ update target model =
         CombinationSignal representation ->
             case target of
                 ToDistantSignal newState ->
-                    CombinationSignal { representation | distantState = newState }
+                    case newState of
+                        ToggleShortBrakePath ->
+                            CombinationSignal { representation | shortBrakePath = not representation.shortBrakePath }
+
+                        _ ->
+                            CombinationSignal { representation | distantState = newState }
 
                 ToMainSignal newState ->
-                    CombinationSignal { representation | mainState = newState }
+                    case newState of
+                        ToggleShortBrakePath ->
+                            model
+
+                        _ ->
+                            CombinationSignal { representation | mainState = newState }
 
         MainSignal representation ->
             case target of
                 ToMainSignal newState ->
-                    MainSignal { representation | mainState = newState }
+                    case newState of
+                        ToggleShortBrakePath ->
+                            model
+
+                        _ ->
+                            MainSignal { representation | mainState = newState }
 
                 _ ->
                     model
@@ -113,6 +150,22 @@ view model =
         ]
 
 
+isStop lights =
+    lights.mainState == Stop
+
+
+isProceed lights =
+    lights.mainState == Proceed
+
+
+isExpectStop lights =
+    lights.distantState == Stop
+
+
+isExpectProceed lights =
+    lights.distantState == Proceed
+
+
 viewMainLights signal =
     g []
         [ circle
@@ -120,7 +173,7 @@ viewMainLights signal =
             , cy "32"
             , r "7.5"
             , class
-                (if signal.mainState == Stop then
+                (if isStop signal then
                     "red on"
                  else
                     "red off"
@@ -132,7 +185,7 @@ viewMainLights signal =
             , cy "57.3"
             , r "7.5"
             , class
-                (if signal.mainState == Proceed then
+                (if isProceed signal then
                     "green on"
                  else
                     "green off"
@@ -149,7 +202,7 @@ viewCombinationLights signal =
             , cy "32"
             , r "7.5"
             , class
-                (if signal.mainState == Stop then
+                (if isStop signal then
                     "red on"
                  else
                     "red off"
@@ -161,7 +214,7 @@ viewCombinationLights signal =
             , cy "57.3"
             , r "7.5"
             , class
-                (if (signal.mainState == Proceed && signal.distantState == Stop) then
+                (if (isProceed signal && isExpectStop signal) then
                     "orange on"
                  else
                     "orange off"
@@ -173,13 +226,28 @@ viewCombinationLights signal =
             , cy "57.3"
             , r "7.5"
             , class
-                (if (signal.mainState == Proceed && signal.distantState == Proceed) then
+                (if (isProceed signal && isExpectProceed signal) then
                     "green on"
                  else
                     "green off"
                 )
             ]
             []
+        , if signal.shortBrakePath then
+            circle
+                [ cx "16.5"
+                , cy "14.5"
+                , r "3.5"
+                , class
+                    (if (isProceed signal && isExpectStop signal) then
+                        "white on"
+                     else
+                        "white off"
+                    )
+                ]
+                []
+          else
+            g [] []
         ]
 
 
@@ -190,7 +258,7 @@ viewDistantSignal signal =
             , cy "57.3"
             , r "7.5"
             , class
-                (if signal.distantState == Stop then
+                (if isExpectStop signal then
                     "orange on"
                  else
                     "orange off"
@@ -202,7 +270,7 @@ viewDistantSignal signal =
             , cy "57.3"
             , r "7.5"
             , class
-                (if signal.distantState == Proceed then
+                (if isExpectProceed signal then
                     "green on"
                  else
                     "green off"
@@ -215,7 +283,22 @@ viewDistantSignal signal =
                 , cy "98.7"
                 , r "3.5"
                 , class
-                    (if signal.distantState == Stop then
+                    (if isExpectStop signal then
+                        "white on"
+                     else
+                        "white off"
+                    )
+                ]
+                []
+          else
+            g [] []
+        , if (not signal.repeater && signal.shortBrakePath) then
+            circle
+                [ cx "16.5"
+                , cy "14.5"
+                , r "3.5"
+                , class
+                    (if isExpectStop signal then
                         "white on"
                      else
                         "white off"
