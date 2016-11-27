@@ -146,6 +146,22 @@ view model =
                         [ label []
                             [ input
                                 [ type_ "checkbox"
+                                , checked (hasRa12 model.combinationSignal)
+                                , onClick (FirstSignalMsg ToggleHasRa12)
+                                ]
+                                []
+                            , translate model "Rangierfahrt erlaubt Sh 1/Ra 12" "Shunting movement permitted Sh 1/Ra 12"
+                            ]
+                        , button
+                            [ onClick (FirstSignalMsg StopAndRa12)
+                            , disabled (not (hasRa12 model.combinationSignal))
+                            ]
+                            [ translate model "Aktiv" "Active" ]
+                        ]
+                    , div []
+                        [ label []
+                            [ input
+                                [ type_ "checkbox"
                                 , checked (hasZs1 model.combinationSignal)
                                 , onClick (FirstSignalMsg ToggleHasZs1)
                                 ]
@@ -181,6 +197,22 @@ view model =
                             [ translate model "Halt" "Stop" ]
                         , button [ onClick (SecondSignalMsg Proceed) ]
                             [ translate model "Fahrt" "Proceed" ]
+                        ]
+                    , div []
+                        [ label []
+                            [ input
+                                [ type_ "checkbox"
+                                , checked (hasRa12 model.mainSignal)
+                                , onClick (SecondSignalMsg ToggleHasRa12)
+                                ]
+                                []
+                            , translate model "Rangierfahrt erlaubt Sh 1/Ra 12" "Shunting movement permitted Sh 1/Ra 12"
+                            ]
+                        , button
+                            [ onClick (SecondSignalMsg StopAndRa12)
+                            , disabled (not (hasRa12 model.mainSignal))
+                            ]
+                            [ translate model "Aktiv" "Active" ]
                         ]
                     , div []
                         [ label []
@@ -234,6 +266,19 @@ shortBrakePath model =
 
         KsSignal.CombinationSignal state ->
             state.shortBrakePath
+
+        _ ->
+            False
+
+
+hasRa12 : KsSignal.Model -> Bool
+hasRa12 model =
+    case model of
+        KsSignal.CombinationSignal state ->
+            state.hasRa12
+
+        KsSignal.MainSignal state ->
+            state.hasRa12
 
         _ ->
             False

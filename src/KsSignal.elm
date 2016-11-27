@@ -15,10 +15,16 @@ type Model
         { distantState : Messages.Msg
         , mainState : Messages.Msg
         , shortBrakePath : Bool
+        , hasRa12 : Bool
         , hasZs1 : Bool
         , hasZs7 : Bool
         }
-    | MainSignal { mainState : Messages.Msg, hasZs1 : Bool, hasZs7 : Bool }
+    | MainSignal
+        { mainState : Messages.Msg
+        , hasRa12 : Bool
+        , hasZs1 : Bool
+        , hasZs7 : Bool
+        }
 
 
 distantSignal : Model
@@ -45,6 +51,7 @@ combinationSignal =
         { distantState = Stop
         , mainState = Stop
         , shortBrakePath = False
+        , hasRa12 = False
         , hasZs1 = False
         , hasZs7 = False
         }
@@ -52,7 +59,12 @@ combinationSignal =
 
 mainSignal : Model
 mainSignal =
-    MainSignal { mainState = Stop, hasZs1 = False, hasZs7 = False }
+    MainSignal
+        { mainState = Stop
+        , hasRa12 = False
+        , hasZs1 = False
+        , hasZs7 = False
+        }
 
 
 update : Messages.Target -> Model -> Model
@@ -64,6 +76,9 @@ update target model =
                     case newState of
                         ToggleShortBrakePath ->
                             DistantSignal { representation | shortBrakePath = not representation.shortBrakePath }
+
+                        ToggleHasRa12 ->
+                            model
 
                         ToggleHasZs1 ->
                             model
@@ -84,6 +99,9 @@ update target model =
                         ToggleShortBrakePath ->
                             CombinationSignal { representation | shortBrakePath = not representation.shortBrakePath }
 
+                        ToggleHasRa12 ->
+                            model
+
                         ToggleHasZs1 ->
                             model
 
@@ -97,6 +115,9 @@ update target model =
                     case newState of
                         ToggleShortBrakePath ->
                             model
+
+                        ToggleHasRa12 ->
+                            CombinationSignal { representation | hasRa12 = not representation.hasRa12 }
 
                         ToggleHasZs1 ->
                             CombinationSignal { representation | hasZs1 = not representation.hasZs1 }
@@ -113,6 +134,9 @@ update target model =
                     case newState of
                         ToggleShortBrakePath ->
                             model
+
+                        ToggleHasRa12 ->
+                            MainSignal { representation | hasRa12 = not representation.hasRa12 }
 
                         ToggleHasZs1 ->
                             MainSignal { representation | hasZs1 = not representation.hasZs1 }
@@ -196,8 +220,12 @@ viewMainLights signal =
     g []
         [ bigLamp "red" (isStop signal) "32" "32"
         , bigLamp "green" (isProceed signal) "32" "57.3"
-        , if signal.hasZs1 then
-            smallBlinkingLamp "white" (isZs1 signal) "32" "81"
+        , if signal.hasRa12 then
+            smallLamp "white" (isRa12 signal) "11.5" "98.7"
+          else
+            g [] []
+        , if signal.hasRa12 || signal.hasZs1 then
+            smallOptionallyBlinkingLamp "white" (isZs1 signal) (isRa12 signal || isZs1 signal) "32" "81"
           else
             g [] []
         , if signal.hasZs7 then
@@ -216,8 +244,12 @@ viewCombinationLights signal =
         [ bigLamp "red" (isStop signal) "32" "32"
         , bigLamp "orange" (isProceed signal && isExpectStop signal) "47.5" "57.3"
         , bigLamp "green" (isProceed signal && isExpectProceed signal) "16.5" "57.3"
-        , if signal.hasZs1 then
-            smallBlinkingLamp "white" (isZs1 signal) "32" "81"
+        , if signal.hasRa12 then
+            smallLamp "white" (isRa12 signal) "11.5" "98.7"
+          else
+            g [] []
+        , if signal.hasRa12 || signal.hasZs1 then
+            smallOptionallyBlinkingLamp "white" (isZs1 signal) (isRa12 signal || isZs1 signal) "32" "81"
           else
             g [] []
         , if signal.hasZs7 then
@@ -254,6 +286,8 @@ isStop lights =
     lights.mainState
         == Stop
         || lights.mainState
+        == StopAndRa12
+        || lights.mainState
         == StopAndZs1
         || lights.mainState
         == StopAndZs7
@@ -267,6 +301,8 @@ isExpectStop lights =
     lights.distantState
         == Stop
         || lights.distantState
+        == StopAndRa12
+        || lights.distantState
         == StopAndZs1
         || lights.distantState
         == StopAndZs7
@@ -274,6 +310,10 @@ isExpectStop lights =
 
 isExpectProceed lights =
     lights.distantState == Proceed
+
+
+isRa12 lights =
+    lights.mainState == StopAndRa12
 
 
 isZs1 lights =
