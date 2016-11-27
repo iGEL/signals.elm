@@ -70,85 +70,65 @@ mainSignal =
 update : Messages.Target -> Model -> Model
 update target model =
     case model of
-        DistantSignal representation ->
+        DistantSignal signalState ->
             case target of
-                ToDistantSignal newState ->
-                    case newState of
-                        ToggleShortBrakePath ->
-                            DistantSignal { representation | shortBrakePath = not representation.shortBrakePath }
-
-                        ToggleHasRa12 ->
-                            model
-
-                        ToggleHasZs1 ->
-                            model
-
-                        ToggleHasZs7 ->
-                            model
-
-                        _ ->
-                            DistantSignal { representation | distantState = newState }
+                ToDistantSignal msg ->
+                    DistantSignal (updateDistantSignal msg signalState)
 
                 _ ->
                     model
 
-        CombinationSignal representation ->
+        CombinationSignal signalState ->
             case target of
-                ToDistantSignal newState ->
-                    case newState of
-                        ToggleShortBrakePath ->
-                            CombinationSignal { representation | shortBrakePath = not representation.shortBrakePath }
+                ToDistantSignal msg ->
+                    CombinationSignal (updateDistantSignal msg signalState)
 
-                        ToggleHasRa12 ->
-                            model
+                ToMainSignal msg ->
+                    CombinationSignal (updateMainSignal msg signalState)
 
-                        ToggleHasZs1 ->
-                            model
-
-                        ToggleHasZs7 ->
-                            model
-
-                        _ ->
-                            CombinationSignal { representation | distantState = newState }
-
-                ToMainSignal newState ->
-                    case newState of
-                        ToggleShortBrakePath ->
-                            model
-
-                        ToggleHasRa12 ->
-                            CombinationSignal { representation | hasRa12 = not representation.hasRa12 }
-
-                        ToggleHasZs1 ->
-                            CombinationSignal { representation | hasZs1 = not representation.hasZs1 }
-
-                        ToggleHasZs7 ->
-                            CombinationSignal { representation | hasZs7 = not representation.hasZs7 }
-
-                        _ ->
-                            CombinationSignal { representation | mainState = newState }
-
-        MainSignal representation ->
+        MainSignal signalState ->
             case target of
-                ToMainSignal newState ->
-                    case newState of
-                        ToggleShortBrakePath ->
-                            model
-
-                        ToggleHasRa12 ->
-                            MainSignal { representation | hasRa12 = not representation.hasRa12 }
-
-                        ToggleHasZs1 ->
-                            MainSignal { representation | hasZs1 = not representation.hasZs1 }
-
-                        ToggleHasZs7 ->
-                            MainSignal { representation | hasZs7 = not representation.hasZs7 }
-
-                        _ ->
-                            MainSignal { representation | mainState = newState }
+                ToMainSignal msg ->
+                    MainSignal (updateMainSignal msg signalState)
 
                 _ ->
                     model
+
+
+updateDistantSignal msg signalState =
+    case msg of
+        ToggleShortBrakePath ->
+            { signalState | shortBrakePath = not signalState.shortBrakePath }
+
+        ToggleHasRa12 ->
+            signalState
+
+        ToggleHasZs1 ->
+            signalState
+
+        ToggleHasZs7 ->
+            signalState
+
+        _ ->
+            { signalState | distantState = msg }
+
+
+updateMainSignal msg signalState =
+    case msg of
+        ToggleShortBrakePath ->
+            signalState
+
+        ToggleHasRa12 ->
+            { signalState | hasRa12 = not signalState.hasRa12 }
+
+        ToggleHasZs1 ->
+            { signalState | hasZs1 = not signalState.hasZs1 }
+
+        ToggleHasZs7 ->
+            { signalState | hasZs7 = not signalState.hasZs7 }
+
+        _ ->
+            { signalState | mainState = msg }
 
 
 view model =
@@ -218,32 +198,26 @@ view model =
 
 viewMainLights signal =
     g []
-        [ bigLamp "red" (isStop signal) "32" "32"
+        [ viewMainAndCombinationLights signal
         , bigLamp "green" (isProceed signal) "32" "57.3"
-        , if signal.hasRa12 then
-            smallLamp "white" (isRa12 signal) "11.5" "98.7"
-          else
-            g [] []
-        , if signal.hasRa12 || signal.hasZs1 then
-            smallOptionallyBlinkingLamp "white" (isZs1 signal) (isRa12 signal || isZs1 signal) "32" "81"
-          else
-            g [] []
-        , if signal.hasZs7 then
-            g []
-                [ smallLamp "yellow" (isZs7 signal) "21.5" "81"
-                , smallLamp "yellow" (isZs7 signal) "32" "98.7"
-                , smallLamp "yellow" (isZs7 signal) "42.5" "81"
-                ]
-          else
-            g [] []
         ]
 
 
 viewCombinationLights signal =
     g []
-        [ bigLamp "red" (isStop signal) "32" "32"
+        [ viewMainAndCombinationLights signal
         , bigLamp "orange" (isProceed signal && isExpectStop signal) "47.5" "57.3"
         , bigLamp "green" (isProceed signal && isExpectProceed signal) "16.5" "57.3"
+        , if signal.shortBrakePath then
+            smallLamp "white" (isProceed signal && isExpectStop signal) "16.5" "14.5"
+          else
+            g [] []
+        ]
+
+
+viewMainAndCombinationLights signal =
+    g []
+        [ bigLamp "red" (isStop signal) "32" "32"
         , if signal.hasRa12 then
             smallLamp "white" (isRa12 signal) "11.5" "98.7"
           else
@@ -258,10 +232,6 @@ viewCombinationLights signal =
                 , smallLamp "yellow" (isZs7 signal) "32" "98.7"
                 , smallLamp "yellow" (isZs7 signal) "42.5" "81"
                 ]
-          else
-            g [] []
-        , if signal.shortBrakePath then
-            smallLamp "white" (isProceed signal && isExpectStop signal) "16.5" "14.5"
           else
             g [] []
         ]

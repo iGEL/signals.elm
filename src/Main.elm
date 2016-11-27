@@ -90,15 +90,6 @@ update msg model =
             ( { model | language = language }, Cmd.none )
 
 
-translate model german english =
-    case model.language of
-        German ->
-            text german
-
-        English ->
-            text english
-
-
 view : Model -> Html.Html Msg
 view model =
     div []
@@ -113,140 +104,15 @@ view model =
                 ]
             , tr []
                 [ td []
-                    [ label []
-                        [ input
-                            [ type_ "checkbox"
-                            , checked (shortBrakePath model.distantSignal)
-                            , onClick (FirstSignalMsg ToggleShortBrakePath)
-                            ]
-                            []
-                        , translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
-                        ]
+                    [ distantSignalOptions FirstSignalMsg model.distantSignal model
                     ]
                 , td [] []
                 , td [ style [ ( "text-align", "center" ) ] ]
-                    [ div []
-                        [ button [ onClick (FirstSignalMsg Stop) ]
-                            [ translate model "Halt" "Stop" ]
-                        , button [ onClick (FirstSignalMsg Proceed) ]
-                            [ translate model "Fahrt" "Proceed" ]
-                        ]
-                    , div []
-                        [ label []
-                            [ input
-                                [ type_ "checkbox"
-                                , checked (shortBrakePath model.combinationSignal)
-                                , onClick (SecondSignalMsg ToggleShortBrakePath)
-                                ]
-                                []
-                            , translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
-                            ]
-                        ]
-                    , div []
-                        [ label []
-                            [ input
-                                [ type_ "checkbox"
-                                , checked (hasRa12 model.combinationSignal)
-                                , onClick (FirstSignalMsg ToggleHasRa12)
-                                ]
-                                []
-                            , translate model "Rangierfahrt erlaubt Sh 1/Ra 12" "Shunting movement permitted Sh 1/Ra 12"
-                            ]
-                        , button
-                            [ onClick (FirstSignalMsg StopAndRa12)
-                            , disabled (not (hasRa12 model.combinationSignal))
-                            ]
-                            [ translate model "Aktiv" "Active" ]
-                        ]
-                    , div []
-                        [ label []
-                            [ input
-                                [ type_ "checkbox"
-                                , checked (hasZs1 model.combinationSignal)
-                                , onClick (FirstSignalMsg ToggleHasZs1)
-                                ]
-                                []
-                            , translate model "Ersatzsignal Zs1" "Subsidiary signal Zs1"
-                            ]
-                        , button
-                            [ onClick (FirstSignalMsg StopAndZs1)
-                            , disabled (not (hasZs1 model.combinationSignal))
-                            ]
-                            [ translate model "Aktiv" "Active" ]
-                        ]
-                    , div []
-                        [ label []
-                            [ input
-                                [ type_ "checkbox"
-                                , checked (hasZs7 model.combinationSignal)
-                                , onClick (FirstSignalMsg ToggleHasZs7)
-                                ]
-                                []
-                            , translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
-                            ]
-                        , button
-                            [ onClick (FirstSignalMsg StopAndZs7)
-                            , disabled (not (hasZs7 model.combinationSignal))
-                            ]
-                            [ translate model "Aktiv" "Active" ]
-                        ]
+                    [ mainSignalOptions FirstSignalMsg model.combinationSignal model
+                    , distantSignalOptions SecondSignalMsg model.combinationSignal model
                     ]
                 , td [ style [ ( "text-align", "center" ) ] ]
-                    [ div []
-                        [ button [ onClick (SecondSignalMsg Stop) ]
-                            [ translate model "Halt" "Stop" ]
-                        , button [ onClick (SecondSignalMsg Proceed) ]
-                            [ translate model "Fahrt" "Proceed" ]
-                        ]
-                    , div []
-                        [ label []
-                            [ input
-                                [ type_ "checkbox"
-                                , checked (hasRa12 model.mainSignal)
-                                , onClick (SecondSignalMsg ToggleHasRa12)
-                                ]
-                                []
-                            , translate model "Rangierfahrt erlaubt Sh 1/Ra 12" "Shunting movement permitted Sh 1/Ra 12"
-                            ]
-                        , button
-                            [ onClick (SecondSignalMsg StopAndRa12)
-                            , disabled (not (hasRa12 model.mainSignal))
-                            ]
-                            [ translate model "Aktiv" "Active" ]
-                        ]
-                    , div []
-                        [ label []
-                            [ input
-                                [ type_ "checkbox"
-                                , checked (hasZs1 model.mainSignal)
-                                , onClick (SecondSignalMsg ToggleHasZs1)
-                                ]
-                                []
-                            , translate model "Ersatzsignal Zs1" "Subsidiary signal Zs1"
-                            ]
-                        , button
-                            [ onClick (SecondSignalMsg StopAndZs1)
-                            , disabled (not (hasZs1 model.mainSignal))
-                            ]
-                            [ translate model "Aktiv" "Active" ]
-                        ]
-                    , div []
-                        [ label []
-                            [ input
-                                [ type_ "checkbox"
-                                , checked (hasZs7 model.mainSignal)
-                                , onClick (SecondSignalMsg ToggleHasZs7)
-                                ]
-                                []
-                            , translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
-                            ]
-                        , button
-                            [ onClick (SecondSignalMsg StopAndZs7)
-                            , disabled (not (hasZs7 model.mainSignal))
-                            ]
-                            [ translate model "Aktiv" "Active" ]
-                        ]
-                    ]
+                    [ mainSignalOptions SecondSignalMsg model.mainSignal model ]
                 ]
             , tr []
                 [ td [] [ Html.map FirstSignalMsg (KsSignal.view model.distantSignal) ]
@@ -255,6 +121,76 @@ view model =
                 , td [] [ Html.map FirstSignalMsg (KsSignal.view model.mainSignal) ]
                 ]
             ]
+        ]
+
+
+distantSignalOptions targetSignal signal model =
+    optionWithoutButton
+        { toggle_active = shortBrakePath signal
+        , toggle_msg = targetSignal ToggleShortBrakePath
+        , toggle_label = translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
+        }
+
+
+mainSignalOptions targetSignal signal model =
+    div []
+        [ button [ onClick (targetSignal Stop) ]
+            [ translate model "Halt" "Stop" ]
+        , button [ onClick (targetSignal Proceed) ]
+            [ translate model "Fahrt" "Proceed" ]
+        , optionWithButton
+            { toggle_active = hasRa12 signal
+            , toggle_msg = targetSignal ToggleHasRa12
+            , toggle_label = translate model "Rangierfahrt erlaubt Sh 1/Ra 12" "Shunting permitted Sh 1/Ra 12"
+            , action_msg = targetSignal StopAndRa12
+            , action_label = translate model "Aktiv" "Active"
+            }
+        , optionWithButton
+            { toggle_active = hasZs1 signal
+            , toggle_msg = targetSignal ToggleHasZs1
+            , toggle_label = translate model "Ersatzsignal Zs1" "Subsidiary signal Zs1"
+            , action_msg = targetSignal StopAndZs1
+            , action_label = translate model "Aktiv" "Active"
+            }
+        , optionWithButton
+            { toggle_active = hasZs7 signal
+            , toggle_msg = targetSignal ToggleHasZs7
+            , toggle_label = translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
+            , action_msg = targetSignal StopAndZs7
+            , action_label = translate model "Aktiv" "Active"
+            }
+        ]
+
+
+translate model german english =
+    case model.language of
+        German ->
+            text german
+
+        English ->
+            text english
+
+
+optionWithoutButton options =
+    label []
+        [ input
+            [ type_ "checkbox"
+            , checked options.toggle_active
+            , onClick options.toggle_msg
+            ]
+            []
+        , options.toggle_label
+        ]
+
+
+optionWithButton options =
+    div []
+        [ optionWithoutButton options
+        , button
+            [ onClick options.action_msg
+            , disabled (not options.toggle_active)
+            ]
+            [ options.action_label ]
         ]
 
 
