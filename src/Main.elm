@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (div, button, label, input, text, table, tr, th, td)
-import Html.Attributes exposing (style, type_, checked)
+import Html.Attributes exposing (style, type_, checked, disabled)
 import Html.Events exposing (onClick)
 import Time exposing (Time, second)
 import KsSignal
@@ -26,6 +26,15 @@ type alias Model =
     , mainSignal : KsSignal.Model
     , language : Language
     }
+
+
+main =
+    Html.program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = (\n -> Sub.none)
+        }
 
 
 init : ( Model, Cmd Msg )
@@ -81,13 +90,6 @@ update msg model =
             ( { model | language = language }, Cmd.none )
 
 
-subscriptions model =
-    Sub.batch
-        [ Time.every second (\n -> FirstSignalMsg ToggleBlink)
-        , Time.every second (\n -> SecondSignalMsg ToggleBlink)
-        ]
-
-
 translate model german english =
     case model.language of
         German ->
@@ -95,19 +97,6 @@ translate model german english =
 
         English ->
             text english
-
-
-shortBrakePath : KsSignal.Model -> Bool
-shortBrakePath model =
-    case model of
-        KsSignal.DistantSignal state ->
-            state.shortBrakePath
-
-        KsSignal.CombinationSignal state ->
-            state.shortBrakePath
-
-        _ ->
-            False
 
 
 view : Model -> Html.Html Msg
@@ -141,26 +130,90 @@ view model =
                             [ translate model "Halt" "Stop" ]
                         , button [ onClick (FirstSignalMsg Proceed) ]
                             [ translate model "Fahrt" "Proceed" ]
-                        , button [ onClick (FirstSignalMsg StopAndZs1) ]
-                            [ translate model "Halt + Zs 1" "Stop + Zs 1" ]
                         ]
-                    , label []
-                        [ input
-                            [ type_ "checkbox"
-                            , checked (shortBrakePath model.combinationSignal)
-                            , onClick (SecondSignalMsg ToggleShortBrakePath)
+                    , div []
+                        [ label []
+                            [ input
+                                [ type_ "checkbox"
+                                , checked (shortBrakePath model.combinationSignal)
+                                , onClick (SecondSignalMsg ToggleShortBrakePath)
+                                ]
+                                []
+                            , translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
                             ]
-                            []
-                        , translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
+                        ]
+                    , div []
+                        [ label []
+                            [ input
+                                [ type_ "checkbox"
+                                , checked (hasZs1 model.combinationSignal)
+                                , onClick (FirstSignalMsg ToggleHasZs1)
+                                ]
+                                []
+                            , translate model "Ersatzsignal Zs1" "Subsidiary signal Zs1"
+                            ]
+                        , button
+                            [ onClick (FirstSignalMsg StopAndZs1)
+                            , disabled (not (hasZs1 model.combinationSignal))
+                            ]
+                            [ translate model "Aktiv" "Active" ]
+                        ]
+                    , div []
+                        [ label []
+                            [ input
+                                [ type_ "checkbox"
+                                , checked (hasZs7 model.combinationSignal)
+                                , onClick (FirstSignalMsg ToggleHasZs7)
+                                ]
+                                []
+                            , translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
+                            ]
+                        , button
+                            [ onClick (FirstSignalMsg StopAndZs7)
+                            , disabled (not (hasZs7 model.combinationSignal))
+                            ]
+                            [ translate model "Aktiv" "Active" ]
                         ]
                     ]
                 , td [ style [ ( "text-align", "center" ) ] ]
-                    [ button [ onClick (SecondSignalMsg Stop) ]
-                        [ translate model "Halt" "Stop" ]
-                    , button [ onClick (SecondSignalMsg Proceed) ]
-                        [ translate model "Fahrt" "Proceed" ]
-                    , button [ onClick (SecondSignalMsg StopAndZs1) ]
-                        [ translate model "Halt + Zs 1" "Stop + Zs 1" ]
+                    [ div []
+                        [ button [ onClick (SecondSignalMsg Stop) ]
+                            [ translate model "Halt" "Stop" ]
+                        , button [ onClick (SecondSignalMsg Proceed) ]
+                            [ translate model "Fahrt" "Proceed" ]
+                        ]
+                    , div []
+                        [ label []
+                            [ input
+                                [ type_ "checkbox"
+                                , checked (hasZs1 model.mainSignal)
+                                , onClick (SecondSignalMsg ToggleHasZs1)
+                                ]
+                                []
+                            , translate model "Ersatzsignal Zs1" "Subsidiary signal Zs1"
+                            ]
+                        , button
+                            [ onClick (SecondSignalMsg StopAndZs1)
+                            , disabled (not (hasZs1 model.mainSignal))
+                            ]
+                            [ translate model "Aktiv" "Active" ]
+                        ]
+                    , div []
+                        [ label []
+                            [ input
+                                [ type_ "checkbox"
+                                , checked (hasZs7 model.mainSignal)
+                                , onClick (SecondSignalMsg ToggleHasZs7)
+                                ]
+                                []
+                            , translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
+                            ]
+                        , button
+                            [ onClick (SecondSignalMsg StopAndZs7)
+                            , disabled (not (hasZs7 model.mainSignal))
+                            ]
+                            [ translate model "Aktiv" "Active" ]
+                        ]
                     ]
                 ]
             , tr []
@@ -173,10 +226,40 @@ view model =
         ]
 
 
-main =
-    Html.program
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }
+shortBrakePath : KsSignal.Model -> Bool
+shortBrakePath model =
+    case model of
+        KsSignal.DistantSignal state ->
+            state.shortBrakePath
+
+        KsSignal.CombinationSignal state ->
+            state.shortBrakePath
+
+        _ ->
+            False
+
+
+hasZs1 : KsSignal.Model -> Bool
+hasZs1 model =
+    case model of
+        KsSignal.CombinationSignal state ->
+            state.hasZs1
+
+        KsSignal.MainSignal state ->
+            state.hasZs1
+
+        _ ->
+            False
+
+
+hasZs7 : KsSignal.Model -> Bool
+hasZs7 model =
+    case model of
+        KsSignal.CombinationSignal state ->
+            state.hasZs7
+
+        KsSignal.MainSignal state ->
+            state.hasZs7
+
+        _ ->
+            False

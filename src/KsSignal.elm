@@ -15,9 +15,10 @@ type Model
         { distantState : Messages.Msg
         , mainState : Messages.Msg
         , shortBrakePath : Bool
-        , blink : Bool
+        , hasZs1 : Bool
+        , hasZs7 : Bool
         }
-    | MainSignal { mainState : Messages.Msg, blink : Bool }
+    | MainSignal { mainState : Messages.Msg, hasZs1 : Bool, hasZs7 : Bool }
 
 
 distantSignal : Model
@@ -44,13 +45,14 @@ combinationSignal =
         { distantState = Stop
         , mainState = Stop
         , shortBrakePath = False
-        , blink = False
+        , hasZs1 = False
+        , hasZs7 = False
         }
 
 
 mainSignal : Model
 mainSignal =
-    MainSignal { mainState = Stop, blink = False }
+    MainSignal { mainState = Stop, hasZs1 = False, hasZs7 = False }
 
 
 update : Messages.Target -> Model -> Model
@@ -63,7 +65,10 @@ update target model =
                         ToggleShortBrakePath ->
                             DistantSignal { representation | shortBrakePath = not representation.shortBrakePath }
 
-                        ToggleBlink ->
+                        ToggleHasZs1 ->
+                            model
+
+                        ToggleHasZs7 ->
                             model
 
                         _ ->
@@ -79,7 +84,10 @@ update target model =
                         ToggleShortBrakePath ->
                             CombinationSignal { representation | shortBrakePath = not representation.shortBrakePath }
 
-                        ToggleBlink ->
+                        ToggleHasZs1 ->
+                            model
+
+                        ToggleHasZs7 ->
                             model
 
                         _ ->
@@ -90,8 +98,11 @@ update target model =
                         ToggleShortBrakePath ->
                             model
 
-                        ToggleBlink ->
-                            CombinationSignal { representation | blink = not representation.blink }
+                        ToggleHasZs1 ->
+                            CombinationSignal { representation | hasZs1 = not representation.hasZs1 }
+
+                        ToggleHasZs7 ->
+                            CombinationSignal { representation | hasZs7 = not representation.hasZs7 }
 
                         _ ->
                             CombinationSignal { representation | mainState = newState }
@@ -103,8 +114,11 @@ update target model =
                         ToggleShortBrakePath ->
                             model
 
-                        ToggleBlink ->
-                            MainSignal { representation | blink = not representation.blink }
+                        ToggleHasZs1 ->
+                            MainSignal { representation | hasZs1 = not representation.hasZs1 }
+
+                        ToggleHasZs7 ->
+                            MainSignal { representation | hasZs7 = not representation.hasZs7 }
 
                         _ ->
                             MainSignal { representation | mainState = newState }
@@ -130,6 +144,15 @@ view model =
                     .white.on { filter: drop-shadow(0 0 5px #ebe6d8) }
                     circle.on { fill-opacity: 1; transition: fill-opacity .05s ease-in; transition-delay: .1s }
                     circle.off { fill-opacity: 0; transition: fill-opacity .2s ease-out }
+                    @keyframes blinking {
+                        0% { fill-opacity: 1 }
+                        37.5% { fill-opacity: 1 }
+                        40% { fill-opacity: 0 }
+                        90% { fill-opacity: 0 }
+                        100% { fill-opacity: 1 }
+
+                    }
+                    circle.blinking { animation: blinking 2s ease infinite }
                     """
             ]
         , defs []
@@ -173,7 +196,18 @@ viewMainLights signal =
     g []
         [ bigLamp "red" (isStop signal) "32" "32"
         , bigLamp "green" (isProceed signal) "32" "57.3"
-        , smallLamp "white" (isZs1 signal && signal.blink) "32" "81"
+        , if signal.hasZs1 then
+            smallBlinkingLamp "white" (isZs1 signal) "32" "81"
+          else
+            g [] []
+        , if signal.hasZs7 then
+            g []
+                [ smallLamp "yellow" (isZs7 signal) "21.5" "81"
+                , smallLamp "yellow" (isZs7 signal) "32" "98.7"
+                , smallLamp "yellow" (isZs7 signal) "42.5" "81"
+                ]
+          else
+            g [] []
         ]
 
 
@@ -182,7 +216,18 @@ viewCombinationLights signal =
         [ bigLamp "red" (isStop signal) "32" "32"
         , bigLamp "orange" (isProceed signal && isExpectStop signal) "47.5" "57.3"
         , bigLamp "green" (isProceed signal && isExpectProceed signal) "16.5" "57.3"
-        , smallLamp "white" (isZs1 signal && signal.blink) "32" "81"
+        , if signal.hasZs1 then
+            smallBlinkingLamp "white" (isZs1 signal) "32" "81"
+          else
+            g [] []
+        , if signal.hasZs7 then
+            g []
+                [ smallLamp "yellow" (isZs7 signal) "21.5" "81"
+                , smallLamp "yellow" (isZs7 signal) "32" "98.7"
+                , smallLamp "yellow" (isZs7 signal) "42.5" "81"
+                ]
+          else
+            g [] []
         , if signal.shortBrakePath then
             smallLamp "white" (isProceed signal && isExpectStop signal) "16.5" "14.5"
           else
@@ -206,7 +251,12 @@ viewDistantSignal signal =
 
 
 isStop lights =
-    lights.mainState == Stop || lights.mainState == StopAndZs1
+    lights.mainState
+        == Stop
+        || lights.mainState
+        == StopAndZs1
+        || lights.mainState
+        == StopAndZs7
 
 
 isProceed lights =
@@ -214,7 +264,12 @@ isProceed lights =
 
 
 isExpectStop lights =
-    lights.distantState == Stop || lights.distantState == StopAndZs1
+    lights.distantState
+        == Stop
+        || lights.distantState
+        == StopAndZs1
+        || lights.distantState
+        == StopAndZs7
 
 
 isExpectProceed lights =
@@ -225,10 +280,17 @@ isZs1 lights =
     lights.mainState == StopAndZs1
 
 
-lamp color on x y radius =
+isZs7 lights =
+    lights.mainState == StopAndZs7
+
+
+lamp color blinking on x y radius =
     let
         onClass =
-            color ++ " on"
+            if blinking then
+                color ++ " on blinking"
+            else
+                color ++ " on"
 
         offClass =
             color ++ " off"
@@ -248,8 +310,24 @@ lamp color on x y radius =
 
 
 bigLamp color on x y =
-    lamp color on x y "7.5"
+    bigOptionallyBlinkingLamp color False on x y
 
 
 smallLamp color on x y =
-    lamp color on x y "3.5"
+    smallOptionallyBlinkingLamp color False on x y
+
+
+bigBlinkingLamp color on x y =
+    bigOptionallyBlinkingLamp color True on x y
+
+
+smallBlinkingLamp color on x y =
+    smallOptionallyBlinkingLamp color True on x y
+
+
+bigOptionallyBlinkingLamp color blinking on x y =
+    lamp color blinking on x y "7.5"
+
+
+smallOptionallyBlinkingLamp color blinking on x y =
+    lamp color blinking on x y "3.5"

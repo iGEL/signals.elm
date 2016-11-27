@@ -7,8 +7,11 @@ type Msg
     = Stop
     | Proceed
     | StopAndZs1
+    | StopAndZs7
+    | ResetZs1
+    | ToggleHasZs1
+    | ToggleHasZs7
     | ToggleShortBrakePath
-    | ToggleBlink
 
 
 type Target
