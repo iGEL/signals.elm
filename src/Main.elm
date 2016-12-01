@@ -1,11 +1,12 @@
 module Main exposing (..)
 
-import Html exposing (div, button, label, input, text, table, tr, th, td)
-import Html.Attributes exposing (style, type_, checked, disabled)
+import Html exposing (div, button, label, input, text, table, tr, th, td, select, option)
+import Html.Attributes exposing (style, type_, checked, disabled, value)
 import Html.Events exposing (onClick)
 import Time exposing (Time, second)
 import KsSignal
 import Messages exposing (..)
+import SelectChange exposing (..)
 
 
 type Msg
@@ -138,6 +139,17 @@ mainSignalOptions targetSignal signal model =
             [ translate model "Halt" "Stop" ]
         , button [ onClick (targetSignal Proceed) ]
             [ translate model "Fahrt" "Proceed" ]
+        , div []
+            [ optionWithoutButton
+                { toggle_active = hasZs3 signal
+                , toggle_msg = targetSignal ToggleHasZs3
+                , toggle_label = translate model "Geschwindigkeitsanzeiger Zs3" "Speed display Zs3"
+                }
+            , speedDropdown
+                { active = (hasZs3 signal)
+                , action_msg = targetSignal
+                }
+            ]
         , optionWithButton
             { toggle_active = hasRa12 signal
             , toggle_msg = targetSignal ToggleHasRa12
@@ -194,6 +206,27 @@ optionWithButton options =
         ]
 
 
+speedDropdown options =
+    select
+        [ onSelectChange
+            (\selectedSpeed ->
+                selectedSpeed
+                    |> Messages.On
+                    |> ProceedWithSpeedLimit
+                    |> options.action_msg
+            )
+        , disabled (not options.active)
+        ]
+        (List.map
+            (\speed ->
+                option
+                    [ value (toString (speed * 10)) ]
+                    [ text ((toString (speed * 10)) ++ " km/h") ]
+            )
+            (List.range 1 16)
+        )
+
+
 shortBrakePath : KsSignal.Model -> Bool
 shortBrakePath model =
     case model of
@@ -228,6 +261,19 @@ hasZs1 model =
 
         KsSignal.MainSignal state ->
             state.hasZs1
+
+        _ ->
+            False
+
+
+hasZs3 : KsSignal.Model -> Bool
+hasZs3 model =
+    case model of
+        KsSignal.CombinationSignal state ->
+            state.hasZs3
+
+        KsSignal.MainSignal state ->
+            state.hasZs3
 
         _ ->
             False

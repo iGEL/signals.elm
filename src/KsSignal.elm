@@ -3,6 +3,8 @@ module KsSignal exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Messages exposing (..)
+import Display
+import Lamp exposing (..)
 
 
 type Model
@@ -10,6 +12,7 @@ type Model
         { distantState : Messages.Msg
         , repeater : Bool
         , shortBrakePath : Bool
+        , hasZs3v : Bool
         }
     | CombinationSignal
         { distantState : Messages.Msg
@@ -17,12 +20,15 @@ type Model
         , shortBrakePath : Bool
         , hasRa12 : Bool
         , hasZs1 : Bool
+        , hasZs3 : Bool
+        , hasZs3v : Bool
         , hasZs7 : Bool
         }
     | MainSignal
         { mainState : Messages.Msg
         , hasRa12 : Bool
         , hasZs1 : Bool
+        , hasZs3 : Bool
         , hasZs7 : Bool
         }
 
@@ -33,6 +39,7 @@ distantSignal =
         { distantState = Stop
         , repeater = False
         , shortBrakePath = False
+        , hasZs3v = False
         }
 
 
@@ -42,6 +49,7 @@ signalRepeater =
         { distantState = Stop
         , repeater = True
         , shortBrakePath = False
+        , hasZs3v = False
         }
 
 
@@ -53,6 +61,8 @@ combinationSignal =
         , shortBrakePath = False
         , hasRa12 = False
         , hasZs1 = False
+        , hasZs3 = False
+        , hasZs3v = False
         , hasZs7 = False
         }
 
@@ -63,6 +73,7 @@ mainSignal =
         { mainState = Stop
         , hasRa12 = False
         , hasZs1 = False
+        , hasZs3 = False
         , hasZs7 = False
         }
 
@@ -106,6 +117,9 @@ updateDistantSignal msg signalState =
         ToggleHasZs1 ->
             signalState
 
+        ToggleHasZs3 ->
+            { signalState | hasZs3v = not signalState.hasZs3v }
+
         ToggleHasZs7 ->
             signalState
 
@@ -124,6 +138,9 @@ updateMainSignal msg signalState =
         ToggleHasZs1 ->
             { signalState | hasZs1 = not signalState.hasZs1 }
 
+        ToggleHasZs3 ->
+            { signalState | hasZs3 = not signalState.hasZs3 }
+
         ToggleHasZs7 ->
             { signalState | hasZs7 = not signalState.hasZs7 }
 
@@ -132,7 +149,7 @@ updateMainSignal msg signalState =
 
 
 view model =
-    svg [ version "1.1", viewBox "0 0 70 200", width "200" ]
+    svg [ version "1.1", viewBox "0 0 70 300", width "200" ]
         [ Svg.style []
             [ text """
                     circle { stroke-width: 0.4; stroke-opacity: 0.85; stroke: #333; }
@@ -181,7 +198,28 @@ view model =
                 , stop [ stopColor "#ebe6d8", offset "0.9" ] []
                 ]
             ]
-        , g [ transform "translate(3)" ]
+        , g [ transform "translate(10, 0)" ]
+            [ case model of
+                MainSignal signal ->
+                    viewZs3
+                        { present = signal.hasZs3
+                        , forceOffIf = False
+                        , color = "white"
+                        , state = signal.mainState
+                        }
+
+                CombinationSignal signal ->
+                    viewZs3
+                        { present = signal.hasZs3
+                        , forceOffIf = False
+                        , color = "white"
+                        , state = signal.mainState
+                        }
+
+                _ ->
+                    g [] []
+            ]
+        , g [ transform "translate(3, 55)" ]
             [ rect [ width "64", height "120", x "0", y "0", Svg.Attributes.style "fill:black; stroke: none" ] []
             , case model of
                 DistantSignal signal ->
@@ -193,7 +231,43 @@ view model =
                 MainSignal signal ->
                     viewMainLights signal
             ]
+        , g [ transform "translate(10, 180)" ]
+            [ case model of
+                DistantSignal signal ->
+                    viewZs3
+                        { present = signal.hasZs3v
+                        , forceOffIf = False
+                        , color = "orange"
+                        , state = signal.distantState
+                        }
+
+                CombinationSignal signal ->
+                    viewZs3
+                        { present = signal.hasZs3v
+                        , forceOffIf = isStop signal
+                        , color = "orange"
+                        , state = signal.distantState
+                        }
+
+                _ ->
+                    g [] []
+            ]
         ]
+
+
+viewZs3 options =
+    if options.present then
+        if not options.forceOffIf then
+            case options.state of
+                ProceedWithSpeedLimit speed ->
+                    Display.view options.color speed
+
+                _ ->
+                    Display.view options.color Messages.Off
+        else
+            Display.view options.color Messages.Off
+    else
+        g [] []
 
 
 viewMainLights signal =
@@ -207,9 +281,9 @@ viewCombinationLights signal =
     g []
         [ viewMainAndCombinationLights signal
         , bigLamp "orange" (isProceed signal && isExpectStop signal) "47.5" "57.3"
-        , bigLamp "green" (isProceed signal && isExpectProceed signal) "16.5" "57.3"
+        , bigOptionallyBlinkingLamp "green" (isZs3v signal) (isProceed signal && isExpectProceed signal) "16.5" "57.3"
         , if signal.shortBrakePath then
-            smallLamp "white" (isProceed signal && isExpectStop signal) "16.5" "14.5"
+            smallLamp "white" (isProceed signal && (isExpectStop signal || isZs3v signal)) "16.5" "14.5"
           else
             g [] []
         ]
@@ -240,13 +314,13 @@ viewMainAndCombinationLights signal =
 viewDistantSignal signal =
     g []
         [ bigLamp "orange" (isExpectStop signal) "47.5" "57.3"
-        , bigLamp "green" (isExpectProceed signal) "16.5" "57.3"
+        , bigOptionallyBlinkingLamp "green" (isZs3v signal) (isExpectProceed signal) "16.5" "57.3"
         , if signal.repeater then
-            smallLamp "white" (isExpectStop signal) "11.5" "98.7"
+            smallLamp "white" (isExpectStop signal || isZs3v signal) "11.5" "98.7"
           else
             g [] []
         , if (not signal.repeater && signal.shortBrakePath) then
-            smallLamp "white" (isExpectStop signal) "16.5" "14.5"
+            smallLamp "white" (isExpectStop signal || isZs3v signal) "16.5" "14.5"
           else
             g [] []
         ]
@@ -264,7 +338,15 @@ isStop lights =
 
 
 isProceed lights =
-    lights.mainState == Proceed
+    case lights.mainState of
+        Proceed ->
+            True
+
+        ProceedWithSpeedLimit _ ->
+            True
+
+        _ ->
+            False
 
 
 isExpectStop lights =
@@ -279,7 +361,15 @@ isExpectStop lights =
 
 
 isExpectProceed lights =
-    lights.distantState == Proceed
+    case lights.distantState of
+        Proceed ->
+            True
+
+        ProceedWithSpeedLimit _ ->
+            True
+
+        _ ->
+            False
 
 
 isRa12 lights =
@@ -290,54 +380,14 @@ isZs1 lights =
     lights.mainState == StopAndZs1
 
 
+isZs3v lights =
+    case lights.distantState of
+        ProceedWithSpeedLimit _ ->
+            lights.hasZs3v
+
+        _ ->
+            False
+
+
 isZs7 lights =
     lights.mainState == StopAndZs7
-
-
-lamp color blinking on x y radius =
-    let
-        onClass =
-            if blinking then
-                color ++ " on blinking"
-            else
-                color ++ " on"
-
-        offClass =
-            color ++ " off"
-    in
-        circle
-            [ cx x
-            , cy y
-            , r radius
-            , class
-                (if on then
-                    onClass
-                 else
-                    offClass
-                )
-            ]
-            []
-
-
-bigLamp color on x y =
-    bigOptionallyBlinkingLamp color False on x y
-
-
-smallLamp color on x y =
-    smallOptionallyBlinkingLamp color False on x y
-
-
-bigBlinkingLamp color on x y =
-    bigOptionallyBlinkingLamp color True on x y
-
-
-smallBlinkingLamp color on x y =
-    smallOptionallyBlinkingLamp color True on x y
-
-
-bigOptionallyBlinkingLamp color blinking on x y =
-    lamp color blinking on x y "7.5"
-
-
-smallOptionallyBlinkingLamp color blinking on x y =
-    lamp color blinking on x y "3.5"
