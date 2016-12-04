@@ -274,6 +274,14 @@ viewMainLights signal =
     g []
         [ viewMainAndCombinationLights signal
         , bigLamp "green" (isProceed signal) "32" "57.3"
+        , if signal.hasRa12 then
+            smallLamp "white" (isRa12 signal) "11.5" "98.7"
+          else
+            g [] []
+        , if signal.hasRa12 || signal.hasZs1 then
+            smallOptionallyBlinkingLamp "white" (isZs1 signal) (isRa12 signal || isZs1 signal) "32" "81"
+          else
+            g [] []
         ]
 
 
@@ -282,6 +290,14 @@ viewCombinationLights signal =
         [ viewMainAndCombinationLights signal
         , bigLamp "orange" (isProceed signal && isExpectStop signal) "47.5" "57.3"
         , bigOptionallyBlinkingLamp "green" (isZs3v signal) (isProceed signal && isExpectProceed signal) "16.5" "57.3"
+        , if signal.hasRa12 || signal.hasZs1 then
+            smallOptionallyBlinkingLamp "white" (isZs1 signal) (isRa12 signal || isZs1 signal) "11.5" "98.7"
+          else
+            g [] []
+        , if signal.hasRa12 then
+            smallLamp "white" (isRa12 signal) "32" "81"
+          else
+            g [] []
         , if signal.shortBrakePath then
             smallLamp "white" (isProceed signal && (isExpectStop signal || isZs3v signal)) "16.5" "14.5"
           else
@@ -292,14 +308,6 @@ viewCombinationLights signal =
 viewMainAndCombinationLights signal =
     g []
         [ bigLamp "red" (isStop signal) "32" "32"
-        , if signal.hasRa12 then
-            smallLamp "white" (isRa12 signal) "11.5" "98.7"
-          else
-            g [] []
-        , if signal.hasRa12 || signal.hasZs1 then
-            smallOptionallyBlinkingLamp "white" (isZs1 signal) (isRa12 signal || isZs1 signal) "32" "81"
-          else
-            g [] []
         , if signal.hasZs7 then
             g []
                 [ smallLamp "yellow" (isZs7 signal) "21.5" "81"
