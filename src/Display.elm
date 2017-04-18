@@ -13,52 +13,49 @@ view color msg =
             case msg of
                 Messages.On speed ->
                     case speed of
-                        "160" ->
-                            concat ten sixty
-
-                        "150" ->
+                        "15" ->
                             concat ten fifty
 
-                        "140" ->
+                        "14" ->
                             concat ten fourty
 
-                        "130" ->
+                        "13" ->
                             concat ten thirty
 
-                        "120" ->
+                        "12" ->
                             concat ten twenty
 
-                        "110" ->
+                        "11" ->
                             concat ten ten
 
-                        "100" ->
+                        "10" ->
                             concat ten zero
 
-                        "90" ->
+                        "9" ->
                             ninety
 
-                        "80" ->
+                        "8" ->
                             eigthy
 
-                        "70" ->
+                        "7" ->
                             seventy
 
-                        "60" ->
+                        "6" ->
                             sixty
 
-                        "50" ->
+                        "5" ->
                             fifty
 
-                        "40" ->
+                        "4" ->
                             fourty
 
-                        "30" ->
+                        "3" ->
                             thirty
 
-                        "20" ->
+                        "2" ->
                             twenty
 
-                        "10" ->
+                        "1" ->
                             ten
 
                         _ ->
@@ -68,7 +65,7 @@ view color msg =
                     off
     in
         g []
-            [ rect [ width "50", height "40", x "0", y "0", Svg.Attributes.style "fill:black; stroke: none" ] []
+            [ rect [ width "54", height "44", x "0", y "0", Svg.Attributes.style "fill:black; stroke: none" ] []
             , g []
                 (List.concat
                     (List.indexedMap (paintRow color) (center matrix))
@@ -83,7 +80,7 @@ paintRow color x row =
 
 paintLamp : String -> Int -> Int -> Bool -> Svg msg
 paintLamp color x y on =
-    tinyLamp color on (toString (5 * y + 5)) (toString (5 * x + 5))
+    tinyLamp color on (toString (5 * y + 7)) (toString (5 * x + 7))
 
 
 center : List (List Bool) -> List (List Bool)
@@ -112,6 +109,7 @@ concat first second =
         List.map2 mergeLine first second
 
 
+off : List (List Bool)
 off =
     [ [ False ]
     , [ False ]
@@ -123,6 +121,7 @@ off =
     ]
 
 
+ten : List (List Bool)
 ten =
     [ [ False, False, True ]
     , [ False, True, True ]
@@ -134,6 +133,7 @@ ten =
     ]
 
 
+twenty : List (List Bool)
 twenty =
     [ [ False, True, True, True, False ]
     , [ True, False, False, False, True ]
@@ -145,6 +145,7 @@ twenty =
     ]
 
 
+thirty : List (List Bool)
 thirty =
     [ [ False, True, True, True, False ]
     , [ True, False, False, False, True ]
@@ -156,6 +157,7 @@ thirty =
     ]
 
 
+fourty : List (List Bool)
 fourty =
     [ [ False, False, False, True, False ]
     , [ False, False, True, True, False ]
@@ -167,6 +169,7 @@ fourty =
     ]
 
 
+fifty : List (List Bool)
 fifty =
     [ [ True, True, True, True, True ]
     , [ True, False, False, False, False ]
@@ -178,9 +181,10 @@ fifty =
     ]
 
 
+sixty : List (List Bool)
 sixty =
-    [ [ False, False, True, True, False ]
-    , [ False, True, False, False, False ]
+    [ [ False, True, True, True, False ]
+    , [ True, False, False, False, False ]
     , [ True, False, False, False, False ]
     , [ True, True, True, True, False ]
     , [ True, False, False, False, True ]
@@ -189,6 +193,7 @@ sixty =
     ]
 
 
+seventy : List (List Bool)
 seventy =
     [ [ True, True, True, True, True ]
     , [ False, False, False, False, True ]
@@ -200,6 +205,7 @@ seventy =
     ]
 
 
+eigthy : List (List Bool)
 eigthy =
     [ [ False, True, True, True, False ]
     , [ True, False, False, False, True ]
@@ -211,10 +217,12 @@ eigthy =
     ]
 
 
+ninety : List (List Bool)
 ninety =
     List.map List.reverse (List.reverse sixty)
 
 
+zero : List (List Bool)
 zero =
     [ [ False, True, True, True, False ]
     , [ True, False, False, False, True ]

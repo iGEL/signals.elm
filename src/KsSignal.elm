@@ -3,7 +3,7 @@ module KsSignal exposing (..)
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Messages exposing (..)
-import Display
+import Zs3
 import Lamp exposing (..)
 
 
@@ -12,7 +12,7 @@ type Model
         { distantState : Messages.Msg
         , repeater : Bool
         , shortBrakePath : Bool
-        , hasZs3v : Bool
+        , zs3v : Zs3.Model
         }
     | CombinationSignal
         { distantState : Messages.Msg
@@ -20,17 +20,30 @@ type Model
         , shortBrakePath : Bool
         , hasRa12 : Bool
         , hasZs1 : Bool
-        , hasZs3 : Bool
-        , hasZs3v : Bool
         , hasZs7 : Bool
+        , zs3 : Zs3.Model
+        , zs3v : Zs3.Model
         }
     | MainSignal
         { mainState : Messages.Msg
         , hasRa12 : Bool
         , hasZs1 : Bool
-        , hasZs3 : Bool
         , hasZs7 : Bool
+        , zs3 : Zs3.Model
         }
+
+
+zs3Model : Model -> Zs3.Model
+zs3Model model =
+    case model of
+        DistantSignal _ ->
+            Zs3.distantSignal
+
+        CombinationSignal state ->
+            state.zs3
+
+        MainSignal state ->
+            state.zs3
 
 
 distantSignal : Model
@@ -39,7 +52,7 @@ distantSignal =
         { distantState = Stop
         , repeater = False
         , shortBrakePath = False
-        , hasZs3v = False
+        , zs3v = Zs3.distantSignal
         }
 
 
@@ -49,7 +62,7 @@ signalRepeater =
         { distantState = Stop
         , repeater = True
         , shortBrakePath = False
-        , hasZs3v = False
+        , zs3v = Zs3.distantSignal
         }
 
 
@@ -61,9 +74,9 @@ combinationSignal =
         , shortBrakePath = False
         , hasRa12 = False
         , hasZs1 = False
-        , hasZs3 = False
-        , hasZs3v = False
         , hasZs7 = False
+        , zs3 = Zs3.mainSignal
+        , zs3v = Zs3.distantSignal
         }
 
 
@@ -73,8 +86,8 @@ mainSignal =
         { mainState = Stop
         , hasRa12 = False
         , hasZs1 = False
-        , hasZs3 = False
         , hasZs7 = False
+        , zs3 = Zs3.mainSignal
         }
 
 
@@ -117,14 +130,26 @@ updateDistantSignal msg signalState =
         ToggleHasZs1 ->
             signalState
 
-        ToggleHasZs3 ->
-            { signalState | hasZs3v = not signalState.hasZs3v }
+        SetZs3Absent ->
+            { signalState | zs3v = Zs3.update msg signalState.zs3v }
+
+        SetZs3Dynamic ->
+            { signalState | zs3v = Zs3.update msg signalState.zs3v }
+
+        SetZs3Fixed ->
+            { signalState | zs3v = Zs3.update msg signalState.zs3v }
+
+        SetZs3SpeedLimit _ ->
+            { signalState | zs3v = Zs3.update msg signalState.zs3v }
 
         ToggleHasZs7 ->
             signalState
 
         _ ->
-            { signalState | distantState = msg }
+            { signalState
+                | distantState = msg
+                , zs3v = Zs3.update (SetZs3ForceOff (isStopMsg msg)) signalState.zs3v
+            }
 
 
 updateMainSignal msg signalState =
@@ -138,14 +163,26 @@ updateMainSignal msg signalState =
         ToggleHasZs1 ->
             { signalState | hasZs1 = not signalState.hasZs1 }
 
-        ToggleHasZs3 ->
-            { signalState | hasZs3 = not signalState.hasZs3 }
+        SetZs3Absent ->
+            { signalState | zs3 = Zs3.update msg signalState.zs3 }
+
+        SetZs3Dynamic ->
+            { signalState | zs3 = Zs3.update msg signalState.zs3 }
+
+        SetZs3Fixed ->
+            { signalState | zs3 = Zs3.update msg signalState.zs3 }
+
+        SetZs3SpeedLimit _ ->
+            { signalState | zs3 = Zs3.update msg signalState.zs3 }
 
         ToggleHasZs7 ->
             { signalState | hasZs7 = not signalState.hasZs7 }
 
         _ ->
-            { signalState | mainState = msg }
+            { signalState
+                | mainState = msg
+                , zs3 = Zs3.update (SetZs3ForceOff (isStopMsg msg)) signalState.zs3
+            }
 
 
 view model =
@@ -198,28 +235,18 @@ view model =
                 , stop [ stopColor "#ebe6d8", offset "0.9" ] []
                 ]
             ]
-        , g [ transform "translate(10, 0)" ]
+        , g []
             [ case model of
                 MainSignal signal ->
-                    viewZs3
-                        { present = signal.hasZs3
-                        , forceOffIf = False
-                        , color = "white"
-                        , state = signal.mainState
-                        }
+                    Zs3.view signal.zs3
 
                 CombinationSignal signal ->
-                    viewZs3
-                        { present = signal.hasZs3
-                        , forceOffIf = False
-                        , color = "white"
-                        , state = signal.mainState
-                        }
+                    Zs3.view signal.zs3
 
                 _ ->
                     g [] []
             ]
-        , g [ transform "translate(3, 55)" ]
+        , g [ transform "translate(3, 65)" ]
             [ rect [ width "64", height "120", x "0", y "0", Svg.Attributes.style "fill:black; stroke: none" ] []
             , case model of
                 DistantSignal signal ->
@@ -231,43 +258,18 @@ view model =
                 MainSignal signal ->
                     viewMainLights signal
             ]
-        , g [ transform "translate(10, 180)" ]
+        , g [ transform "translate(0, 168)" ]
             [ case model of
                 DistantSignal signal ->
-                    viewZs3
-                        { present = signal.hasZs3v
-                        , forceOffIf = False
-                        , color = "orange"
-                        , state = signal.distantState
-                        }
+                    Zs3.view signal.zs3v
 
                 CombinationSignal signal ->
-                    viewZs3
-                        { present = signal.hasZs3v
-                        , forceOffIf = isStop signal
-                        , color = "orange"
-                        , state = signal.distantState
-                        }
+                    Zs3.view signal.zs3v
 
                 _ ->
                     g [] []
             ]
         ]
-
-
-viewZs3 options =
-    if options.present then
-        if not options.forceOffIf then
-            case options.state of
-                ProceedWithSpeedLimit speed ->
-                    Display.view options.color speed
-
-                _ ->
-                    Display.view options.color Messages.Off
-        else
-            Display.view options.color Messages.Off
-    else
-        g [] []
 
 
 viewMainLights signal =
@@ -334,15 +336,13 @@ viewDistantSignal signal =
         ]
 
 
+isStopMsg : Msg -> Bool
+isStopMsg msg =
+    (List.member msg [ Stop, StopAndRa12, StopAndZs1, StopAndZs7 ])
+
+
 isStop lights =
-    lights.mainState
-        == Stop
-        || lights.mainState
-        == StopAndRa12
-        || lights.mainState
-        == StopAndZs1
-        || lights.mainState
-        == StopAndZs7
+    isStopMsg lights.mainState
 
 
 isProceed lights =
@@ -350,30 +350,17 @@ isProceed lights =
         Proceed ->
             True
 
-        ProceedWithSpeedLimit _ ->
-            True
-
         _ ->
             False
 
 
 isExpectStop lights =
-    lights.distantState
-        == Stop
-        || lights.distantState
-        == StopAndRa12
-        || lights.distantState
-        == StopAndZs1
-        || lights.distantState
-        == StopAndZs7
+    isStopMsg lights.distantState
 
 
 isExpectProceed lights =
     case lights.distantState of
         Proceed ->
-            True
-
-        ProceedWithSpeedLimit _ ->
             True
 
         _ ->
@@ -390,8 +377,8 @@ isZs1 lights =
 
 isZs3v lights =
     case lights.distantState of
-        ProceedWithSpeedLimit _ ->
-            lights.hasZs3v
+        Proceed ->
+            Zs3.hasSpeedLimit lights.zs3v
 
         _ ->
             False

@@ -1,18 +1,23 @@
 module Messages exposing (..)
 
-import Time exposing (Time)
+
+type alias SpeedLimit =
+    Int
 
 
 type Msg
     = Stop
     | Proceed
     | StopAndZs1
-    | ProceedWithSpeedLimit DisplayMsg
     | StopAndZs7
     | StopAndRa12
     | ResetZs1
     | ToggleHasZs1
-    | ToggleHasZs3
+    | SetZs3Absent
+    | SetZs3Dynamic
+    | SetZs3Fixed
+    | SetZs3SpeedLimit (Maybe SpeedLimit)
+    | SetZs3ForceOff Bool
     | ToggleHasZs7
     | ToggleHasRa12
     | ToggleShortBrakePath

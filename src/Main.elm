@@ -3,8 +3,8 @@ module Main exposing (..)
 import Html exposing (div, button, label, input, text, table, tr, th, td, select, option)
 import Html.Attributes exposing (style, type_, checked, disabled, value)
 import Html.Events exposing (onClick)
-import Time exposing (Time, second)
 import KsSignal
+import Zs3
 import Messages exposing (..)
 import SelectChange exposing (..)
 
@@ -29,6 +29,7 @@ type alias Model =
     }
 
 
+main : Program Never Model Msg
 main =
     Html.program
         { init = init
@@ -125,14 +126,16 @@ view model =
         ]
 
 
+distantSignalOptions : (Messages.Msg -> b) -> KsSignal.Model -> { a | language : Language } -> Html.Html b
 distantSignalOptions targetSignal signal model =
     optionWithoutButton
-        { toggle_active = shortBrakePath signal
-        , toggle_msg = targetSignal ToggleShortBrakePath
-        , toggle_label = translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
+        { toggleActive = shortBrakePath signal
+        , toggleMsg = targetSignal ToggleShortBrakePath
+        , toggleLabel = translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
         }
 
 
+mainSignalOptions : (Messages.Msg -> msg) -> KsSignal.Model -> { a | language : Language } -> Html.Html msg
 mainSignalOptions targetSignal signal model =
     div []
         [ button [ onClick (targetSignal Stop) ]
@@ -140,40 +143,64 @@ mainSignalOptions targetSignal signal model =
         , button [ onClick (targetSignal Proceed) ]
             [ translate model "Fahrt" "Proceed" ]
         , div []
-            [ optionWithoutButton
-                { toggle_active = hasZs3 signal
-                , toggle_msg = targetSignal ToggleHasZs3
-                , toggle_label = translate model "Geschwindigkeitsanzeiger Zs3" "Speed display Zs3"
-                }
+            [ label []
+                [ input
+                    [ type_ "radio"
+                    , checked (Zs3.isAbsent (KsSignal.zs3Model signal))
+                    , onClick (targetSignal SetZs3Absent)
+                    ]
+                    []
+                , translate model "Kein Zs3" "No Zs3"
+                ]
+            , label []
+                [ input
+                    [ type_ "radio"
+                    , checked (Zs3.isDynamic (KsSignal.zs3Model signal))
+                    , onClick (targetSignal SetZs3Dynamic)
+                    ]
+                    []
+                , translate model "Dynamisches Zs3" "Dynamic Zs3"
+                ]
+            , label []
+                [ input
+                    [ type_ "radio"
+                    , checked (Zs3.isFixed (KsSignal.zs3Model signal))
+                    , onClick (targetSignal SetZs3Fixed)
+                    ]
+                    []
+                , translate model "Zs3-Schild" "Zs3 sign"
+                ]
             , speedDropdown
                 { active = (hasZs3 signal)
-                , action_msg = targetSignal
+                , includeUnlimited = Zs3.isDynamic (KsSignal.zs3Model signal)
+                , actionMsg = targetSignal
                 }
             ]
         , optionWithButton
-            { toggle_active = hasRa12 signal
-            , toggle_msg = targetSignal ToggleHasRa12
-            , toggle_label = translate model "Rangierfahrt erlaubt Sh 1/Ra 12" "Shunting permitted Sh 1/Ra 12"
-            , action_msg = targetSignal StopAndRa12
-            , action_label = translate model "Aktiv" "Active"
+            { toggleActive = hasRa12 signal
+            , toggleMsg = targetSignal ToggleHasRa12
+            , toggleLabel = translate model "Rangierfahrt erlaubt Sh 1/Ra 12" "Shunting permitted Sh 1/Ra 12"
+            , actionMsg = targetSignal StopAndRa12
+            , actionLabel = translate model "Aktiv" "Active"
             }
         , optionWithButton
-            { toggle_active = hasZs1 signal
-            , toggle_msg = targetSignal ToggleHasZs1
-            , toggle_label = translate model "Ersatzsignal Zs1" "Subsidiary signal Zs1"
-            , action_msg = targetSignal StopAndZs1
-            , action_label = translate model "Aktiv" "Active"
+            { toggleActive = hasZs1 signal
+            , toggleMsg = targetSignal ToggleHasZs1
+            , toggleLabel = translate model "Ersatzsignal Zs1" "Subsidiary signal Zs1"
+            , actionMsg = targetSignal StopAndZs1
+            , actionLabel = translate model "Aktiv" "Active"
             }
         , optionWithButton
-            { toggle_active = hasZs7 signal
-            , toggle_msg = targetSignal ToggleHasZs7
-            , toggle_label = translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
-            , action_msg = targetSignal StopAndZs7
-            , action_label = translate model "Aktiv" "Active"
+            { toggleActive = hasZs7 signal
+            , toggleMsg = targetSignal ToggleHasZs7
+            , toggleLabel = translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
+            , actionMsg = targetSignal StopAndZs7
+            , actionLabel = translate model "Aktiv" "Active"
             }
         ]
 
 
+translate : { a | language : Language } -> String -> String -> Html.Html msg
 translate model german english =
     case model.language of
         German ->
@@ -183,48 +210,75 @@ translate model german english =
             text english
 
 
+optionWithoutButton : { b | toggleActive : Bool, toggleLabel : Html.Html a, toggleMsg : a } -> Html.Html a
 optionWithoutButton options =
     label []
         [ input
             [ type_ "checkbox"
-            , checked options.toggle_active
-            , onClick options.toggle_msg
+            , checked options.toggleActive
+            , onClick options.toggleMsg
             ]
             []
-        , options.toggle_label
+        , options.toggleLabel
         ]
 
 
+optionWithButton : { a | actionLabel : Html.Html msg, actionMsg : msg, toggleActive : Bool, toggleLabel : Html.Html msg, toggleMsg : msg } -> Html.Html msg
 optionWithButton options =
     div []
         [ optionWithoutButton options
         , button
-            [ onClick options.action_msg
-            , disabled (not options.toggle_active)
+            [ onClick options.actionMsg
+            , disabled (not options.toggleActive)
             ]
-            [ options.action_label ]
+            [ options.actionLabel ]
         ]
 
 
+speedDropdown : { a | actionMsg : Messages.Msg -> msg, active : Bool, includeUnlimited : Bool } -> Html.Html msg
 speedDropdown options =
-    select
-        [ onSelectChange
-            (\selectedSpeed ->
-                selectedSpeed
-                    |> Messages.On
-                    |> ProceedWithSpeedLimit
-                    |> options.action_msg
+    let
+        speeds =
+            if options.includeUnlimited then
+                List.append (List.range 1 15) [ 0 ]
+            else
+                List.range 1 15
+    in
+        select
+            [ onSelectChange
+                (\selectedValue ->
+                    let
+                        selectedValueInt =
+                            selectedValue
+                                |> String.toInt
+                                |> Result.withDefault 0
+
+                        selectedSpeed =
+                            if selectedValueInt == 0 then
+                                Nothing
+                            else
+                                Just selectedValueInt
+                    in
+                        selectedSpeed
+                            |> SetZs3SpeedLimit
+                            |> options.actionMsg
+                )
+            , disabled (not options.active)
+            ]
+            (List.map
+                (\speed ->
+                    option
+                        [ value (toString speed) ]
+                        [ text
+                            (if speed == 0 then
+                                "∞"
+                             else
+                                ((toString (speed * 10)) ++ " km/h")
+                            )
+                        ]
+                )
+                speeds
             )
-        , disabled (not options.active)
-        ]
-        (List.map
-            (\speed ->
-                option
-                    [ value (toString (speed * 10)) ]
-                    [ text ((toString (speed * 10)) ++ " km/h") ]
-            )
-            (List.range 1 16)
-        )
 
 
 shortBrakePath : KsSignal.Model -> Bool
@@ -270,10 +324,10 @@ hasZs3 : KsSignal.Model -> Bool
 hasZs3 model =
     case model of
         KsSignal.CombinationSignal state ->
-            state.hasZs3
+            not (state.zs3.appearance == Zs3.Absent)
 
         KsSignal.MainSignal state ->
-            state.hasZs3
+            not (state.zs3.appearance == Zs3.Absent)
 
         _ ->
             False
