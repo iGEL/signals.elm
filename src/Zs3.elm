@@ -21,7 +21,6 @@ type Location
 type alias Model =
     { appearance : Appearance
     , location : Location
-    , displayForcedOff : Bool
     }
 
 
@@ -29,7 +28,6 @@ distantSignal : Model
 distantSignal =
     { appearance = Absent
     , location = DistantLocation
-    , displayForcedOff = True
     }
 
 
@@ -37,7 +35,6 @@ mainSignal : Model
 mainSignal =
     { appearance = Absent
     , location = MainLocation
-    , displayForcedOff = True
     }
 
 
@@ -52,9 +49,6 @@ update msg model =
 
         SetZs3Fixed ->
             { model | appearance = Fixed (currentSpeedOrDefault model.appearance) }
-
-        SetZs3ForceOff forcedState ->
-            { model | displayForcedOff = forcedState }
 
         SetZs3SpeedLimit possibleSpeedLimit ->
             case model.appearance of
@@ -76,8 +70,8 @@ update msg model =
             model
 
 
-view : Model -> Svg msg
-view model =
+view : Model -> Bool -> Svg msg
+view model displayForcedOff =
     case model.appearance of
         Dynamic possibleSpeedLimit ->
             g [ transform "translate(8,19)" ]
@@ -90,7 +84,7 @@ view model =
                             DistantLocation ->
                                 "orange"
                   in
-                    if model.displayForcedOff then
+                    if displayForcedOff then
                         Display.view color Off
                     else
                         case possibleSpeedLimit of

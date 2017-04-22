@@ -119,6 +119,7 @@ update target model =
                     model
 
 
+updateDistantSignal : Msg -> { a | distantState : Msg, shortBrakePath : Bool, zs3v : Zs3.Model } -> { a | distantState : Msg, shortBrakePath : Bool, zs3v : Zs3.Model }
 updateDistantSignal msg signalState =
     case msg of
         ToggleShortBrakePath ->
@@ -146,12 +147,10 @@ updateDistantSignal msg signalState =
             signalState
 
         _ ->
-            { signalState
-                | distantState = msg
-                , zs3v = Zs3.update (SetZs3ForceOff (isStopMsg msg)) signalState.zs3v
-            }
+            { signalState | distantState = msg }
 
 
+updateMainSignal : Msg -> { a | mainState : Msg, hasRa12 : Bool, hasZs1 : Bool, hasZs7 : Bool, zs3 : Zs3.Model } -> { a | mainState : Msg, hasRa12 : Bool, hasZs1 : Bool, hasZs7 : Bool, zs3 : Zs3.Model }
 updateMainSignal msg signalState =
     case msg of
         ToggleShortBrakePath ->
@@ -179,12 +178,10 @@ updateMainSignal msg signalState =
             { signalState | hasZs7 = not signalState.hasZs7 }
 
         _ ->
-            { signalState
-                | mainState = msg
-                , zs3 = Zs3.update (SetZs3ForceOff (isStopMsg msg)) signalState.zs3
-            }
+            { signalState | mainState = msg }
 
 
+view : Model -> Svg msg
 view model =
     svg [ version "1.1", viewBox "0 0 70 300", width "200" ]
         [ Svg.style []
@@ -238,10 +235,10 @@ view model =
         , g []
             [ case model of
                 MainSignal signal ->
-                    Zs3.view signal.zs3
+                    Zs3.view signal.zs3 (isStop signal)
 
                 CombinationSignal signal ->
-                    Zs3.view signal.zs3
+                    Zs3.view signal.zs3 (isStop signal)
 
                 _ ->
                     g [] []
@@ -261,10 +258,10 @@ view model =
         , g [ transform "translate(0, 168)" ]
             [ case model of
                 DistantSignal signal ->
-                    Zs3.view signal.zs3v
+                    Zs3.view signal.zs3v (isExpectStop signal)
 
                 CombinationSignal signal ->
-                    Zs3.view signal.zs3v
+                    Zs3.view signal.zs3v (isExpectStop signal || isStop signal)
 
                 _ ->
                     g [] []
@@ -272,6 +269,7 @@ view model =
         ]
 
 
+viewMainLights : { a | mainState : Msg, hasRa12 : Bool, hasZs1 : Bool, hasZs7 : Bool } -> Svg msg
 viewMainLights signal =
     g []
         [ viewMainAndCombinationLights signal
@@ -287,6 +285,7 @@ viewMainLights signal =
         ]
 
 
+viewCombinationLights : { a | mainState : Msg, distantState : Msg, shortBrakePath : Bool, hasRa12 : Bool, hasZs1 : Bool, hasZs7 : Bool, zs3v : Zs3.Model } -> Svg msg
 viewCombinationLights signal =
     g []
         [ viewMainAndCombinationLights signal
@@ -307,6 +306,7 @@ viewCombinationLights signal =
         ]
 
 
+viewMainAndCombinationLights : { a | mainState : Msg, hasZs7 : Bool } -> Svg msg
 viewMainAndCombinationLights signal =
     g []
         [ bigLamp "red" (isStop signal) "32" "32"
@@ -321,6 +321,7 @@ viewMainAndCombinationLights signal =
         ]
 
 
+viewDistantSignal : { a | distantState : Msg, repeater : Bool, shortBrakePath : Bool, zs3v : Zs3.Model } -> Svg msg
 viewDistantSignal signal =
     g []
         [ bigLamp "orange" (isExpectStop signal) "47.5" "57.3"
@@ -341,10 +342,12 @@ isStopMsg msg =
     (List.member msg [ Stop, StopAndRa12, StopAndZs1, StopAndZs7 ])
 
 
+isStop : { a | mainState : Msg } -> Bool
 isStop lights =
     isStopMsg lights.mainState
 
 
+isProceed : { a | mainState : Msg } -> Bool
 isProceed lights =
     case lights.mainState of
         Proceed ->
@@ -354,10 +357,12 @@ isProceed lights =
             False
 
 
+isExpectStop : { a | distantState : Msg } -> Bool
 isExpectStop lights =
     isStopMsg lights.distantState
 
 
+isExpectProceed : { a | distantState : Msg } -> Bool
 isExpectProceed lights =
     case lights.distantState of
         Proceed ->
@@ -367,14 +372,17 @@ isExpectProceed lights =
             False
 
 
+isRa12 : { a | mainState : Msg } -> Bool
 isRa12 lights =
     lights.mainState == StopAndRa12
 
 
+isZs1 : { a | mainState : Msg } -> Bool
 isZs1 lights =
     lights.mainState == StopAndZs1
 
 
+isZs3v : { a | distantState : Msg, zs3v : Zs3.Model } -> Bool
 isZs3v lights =
     case lights.distantState of
         Proceed ->
@@ -384,5 +392,6 @@ isZs3v lights =
             False
 
 
+isZs7 : { a | mainState : Msg } -> Bool
 isZs7 lights =
     lights.mainState == StopAndZs7
