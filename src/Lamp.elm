@@ -4,6 +4,14 @@ import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
 
+type State
+    = Absent
+    | Off
+    | Blinking
+    | On
+
+
+lamp : String -> Bool -> Bool -> String -> String -> String -> Svg msg
 lamp color blinking on x y radius =
     let
         onClass =
@@ -55,3 +63,35 @@ smallOptionallyBlinkingLamp color blinking on x y =
 
 tinyLamp color on x y =
     lamp color False on x y "2"
+
+
+maybeBigLamp : State -> String -> String -> String -> Maybe (Svg msg)
+maybeBigLamp state color x y =
+    case state of
+        Absent ->
+            Nothing
+
+        Off ->
+            Just (bigLamp color False x y)
+
+        Blinking ->
+            Just (bigBlinkingLamp color True x y)
+
+        On ->
+            Just (bigLamp color True x y)
+
+
+maybeSmallLamp : State -> String -> String -> String -> Maybe (Svg msg)
+maybeSmallLamp state color x y =
+    case state of
+        Absent ->
+            Nothing
+
+        Off ->
+            Just (smallLamp color False x y)
+
+        Blinking ->
+            Just (smallBlinkingLamp color True x y)
+
+        On ->
+            Just (smallLamp color True x y)

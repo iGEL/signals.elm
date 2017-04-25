@@ -3,7 +3,7 @@ module Main exposing (..)
 import Html exposing (div, button, label, input, text, table, tr, th, td, select, option)
 import Html.Attributes exposing (style, type_, checked, disabled, value)
 import Html.Events exposing (onClick)
-import KsSignal
+import Signal
 import Zs3
 import Messages exposing (..)
 import SelectChange exposing (..)
@@ -21,10 +21,10 @@ type Language
 
 
 type alias Model =
-    { distantSignal : KsSignal.Model
-    , signalRepeater : KsSignal.Model
-    , combinationSignal : KsSignal.Model
-    , mainSignal : KsSignal.Model
+    { distantSignal : Signal.Model
+    , signalRepeater : Signal.Model
+    , combinationSignal : Signal.Model
+    , mainSignal : Signal.Model
     , language : Language
     }
 
@@ -41,10 +41,10 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { distantSignal = KsSignal.distantSignal
-      , signalRepeater = KsSignal.signalRepeater
-      , combinationSignal = KsSignal.combinationSignal
-      , mainSignal = KsSignal.mainSignal
+    ( { distantSignal = Signal.distantSignal
+      , signalRepeater = Signal.signalRepeater
+      , combinationSignal = Signal.combinationSignal
+      , mainSignal = Signal.mainSignal
       , language = German
       }
     , Cmd.none
@@ -57,13 +57,13 @@ update msg model =
         FirstSignalMsg signalmsg ->
             let
                 newDistantSignal =
-                    KsSignal.update (ToDistantSignal signalmsg) model.distantSignal
+                    Signal.update (ToDistantSignal signalmsg) model.distantSignal
 
                 newSignalRepeater =
-                    KsSignal.update (ToDistantSignal signalmsg) model.signalRepeater
+                    Signal.update (ToDistantSignal signalmsg) model.signalRepeater
 
                 newCombinationSignal =
-                    KsSignal.update (ToMainSignal signalmsg) model.combinationSignal
+                    Signal.update (ToMainSignal signalmsg) model.combinationSignal
             in
                 ( { model
                     | distantSignal = newDistantSignal
@@ -76,10 +76,10 @@ update msg model =
         SecondSignalMsg signalmsg ->
             let
                 newCombinationSignal =
-                    KsSignal.update (ToDistantSignal signalmsg) model.combinationSignal
+                    Signal.update (ToDistantSignal signalmsg) model.combinationSignal
 
                 newMainSignal =
-                    KsSignal.update (ToMainSignal signalmsg) model.mainSignal
+                    Signal.update (ToMainSignal signalmsg) model.mainSignal
             in
                 ( { model
                     | combinationSignal = newCombinationSignal
@@ -117,16 +117,16 @@ view model =
                     [ mainSignalOptions SecondSignalMsg model.mainSignal model ]
                 ]
             , tr []
-                [ td [] [ Html.map FirstSignalMsg (KsSignal.view model.distantSignal) ]
-                , td [] [ Html.map FirstSignalMsg (KsSignal.view model.signalRepeater) ]
-                , td [] [ Html.map FirstSignalMsg (KsSignal.view model.combinationSignal) ]
-                , td [] [ Html.map FirstSignalMsg (KsSignal.view model.mainSignal) ]
+                [ td [] [ Html.map FirstSignalMsg (Signal.view model.distantSignal) ]
+                , td [] [ Html.map FirstSignalMsg (Signal.view model.signalRepeater) ]
+                , td [] [ Html.map FirstSignalMsg (Signal.view model.combinationSignal) ]
+                , td [] [ Html.map FirstSignalMsg (Signal.view model.mainSignal) ]
                 ]
             ]
         ]
 
 
-distantSignalOptions : (Messages.Msg -> b) -> KsSignal.Model -> { a | language : Language } -> Html.Html b
+distantSignalOptions : (Messages.Msg -> b) -> Signal.Model -> { a | language : Language } -> Html.Html b
 distantSignalOptions targetSignal signal model =
     optionWithoutButton
         { toggleActive = shortBrakePath signal
@@ -135,7 +135,7 @@ distantSignalOptions targetSignal signal model =
         }
 
 
-mainSignalOptions : (Messages.Msg -> msg) -> KsSignal.Model -> { a | language : Language } -> Html.Html msg
+mainSignalOptions : (Messages.Msg -> msg) -> Signal.Model -> { a | language : Language } -> Html.Html msg
 mainSignalOptions targetSignal signal model =
     div []
         [ button [ onClick (targetSignal Stop) ]
@@ -146,7 +146,7 @@ mainSignalOptions targetSignal signal model =
             [ label []
                 [ input
                     [ type_ "radio"
-                    , checked (Zs3.isAbsent (KsSignal.zs3Model signal))
+                    , checked (Zs3.isAbsent (Signal.zs3Model signal))
                     , onClick (targetSignal SetZs3Absent)
                     ]
                     []
@@ -155,7 +155,7 @@ mainSignalOptions targetSignal signal model =
             , label []
                 [ input
                     [ type_ "radio"
-                    , checked (Zs3.isDynamic (KsSignal.zs3Model signal))
+                    , checked (Zs3.isDynamic (Signal.zs3Model signal))
                     , onClick (targetSignal SetZs3Dynamic)
                     ]
                     []
@@ -164,7 +164,7 @@ mainSignalOptions targetSignal signal model =
             , label []
                 [ input
                     [ type_ "radio"
-                    , checked (Zs3.isFixed (KsSignal.zs3Model signal))
+                    , checked (Zs3.isFixed (Signal.zs3Model signal))
                     , onClick (targetSignal SetZs3Fixed)
                     ]
                     []
@@ -172,7 +172,7 @@ mainSignalOptions targetSignal signal model =
                 ]
             , speedDropdown
                 { active = (hasZs3 signal)
-                , includeUnlimited = Zs3.isDynamic (KsSignal.zs3Model signal)
+                , includeUnlimited = Zs3.isDynamic (Signal.zs3Model signal)
                 , actionMsg = targetSignal
                 }
             ]
@@ -281,65 +281,65 @@ speedDropdown options =
             )
 
 
-shortBrakePath : KsSignal.Model -> Bool
+shortBrakePath : Signal.Model -> Bool
 shortBrakePath model =
     case model of
-        KsSignal.DistantSignal state ->
+        Signal.DistantSignal state ->
             state.shortBrakePath
 
-        KsSignal.CombinationSignal state ->
+        Signal.CombinationSignal state ->
             state.shortBrakePath
 
         _ ->
             False
 
 
-hasRa12 : KsSignal.Model -> Bool
+hasRa12 : Signal.Model -> Bool
 hasRa12 model =
     case model of
-        KsSignal.CombinationSignal state ->
+        Signal.CombinationSignal state ->
             state.hasRa12
 
-        KsSignal.MainSignal state ->
+        Signal.MainSignal state ->
             state.hasRa12
 
         _ ->
             False
 
 
-hasZs1 : KsSignal.Model -> Bool
+hasZs1 : Signal.Model -> Bool
 hasZs1 model =
     case model of
-        KsSignal.CombinationSignal state ->
+        Signal.CombinationSignal state ->
             state.hasZs1
 
-        KsSignal.MainSignal state ->
+        Signal.MainSignal state ->
             state.hasZs1
 
         _ ->
             False
 
 
-hasZs3 : KsSignal.Model -> Bool
+hasZs3 : Signal.Model -> Bool
 hasZs3 model =
     case model of
-        KsSignal.CombinationSignal state ->
+        Signal.CombinationSignal state ->
             not (state.zs3.appearance == Zs3.Absent)
 
-        KsSignal.MainSignal state ->
+        Signal.MainSignal state ->
             not (state.zs3.appearance == Zs3.Absent)
 
         _ ->
             False
 
 
-hasZs7 : KsSignal.Model -> Bool
+hasZs7 : Signal.Model -> Bool
 hasZs7 model =
     case model of
-        KsSignal.CombinationSignal state ->
+        Signal.CombinationSignal state ->
             state.hasZs7
 
-        KsSignal.MainSignal state ->
+        Signal.MainSignal state ->
             state.hasZs7
 
         _ ->
