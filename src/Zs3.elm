@@ -130,6 +130,11 @@ isAbsent model =
             False
 
 
+isPresent : Model -> Bool
+isPresent model =
+    not (isAbsent model)
+
+
 isFixed : Model -> Bool
 isFixed model =
     case model.appearance of

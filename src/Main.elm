@@ -3,10 +3,11 @@ module Main exposing (..)
 import Html exposing (div, button, label, input, text, table, tr, th, td, select, option)
 import Html.Attributes exposing (style, type_, checked, disabled, value)
 import Html.Events exposing (onClick)
-import Signal
-import Zs3
 import Messages exposing (..)
 import SelectChange exposing (..)
+import Signal
+import SignalModel
+import Zs3
 
 
 type Msg
@@ -21,10 +22,10 @@ type Language
 
 
 type alias Model =
-    { distantSignal : Signal.Model
-    , signalRepeater : Signal.Model
-    , combinationSignal : Signal.Model
-    , mainSignal : Signal.Model
+    { distantSignal : SignalModel.Model
+    , signalRepeater : SignalModel.Model
+    , combinationSignal : SignalModel.Model
+    , mainSignal : SignalModel.Model
     , language : Language
     }
 
@@ -41,10 +42,10 @@ main =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { distantSignal = Signal.distantSignal
-      , signalRepeater = Signal.signalRepeater
-      , combinationSignal = Signal.combinationSignal
-      , mainSignal = Signal.mainSignal
+    ( { distantSignal = SignalModel.distantSignal
+      , signalRepeater = SignalModel.signalRepeater
+      , combinationSignal = SignalModel.combinationSignal
+      , mainSignal = SignalModel.mainSignal
       , language = German
       }
     , Cmd.none
@@ -126,16 +127,16 @@ view model =
         ]
 
 
-distantSignalOptions : (Messages.Msg -> b) -> Signal.Model -> { a | language : Language } -> Html.Html b
+distantSignalOptions : (Messages.Msg -> b) -> SignalModel.Model -> { a | language : Language } -> Html.Html b
 distantSignalOptions targetSignal signal model =
     optionWithoutButton
-        { toggleActive = shortBrakePath signal
+        { toggleActive = SignalModel.shortBrakePath signal
         , toggleMsg = targetSignal ToggleShortBrakePath
         , toggleLabel = translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
         }
 
 
-mainSignalOptions : (Messages.Msg -> msg) -> Signal.Model -> { a | language : Language } -> Html.Html msg
+mainSignalOptions : (Messages.Msg -> msg) -> SignalModel.Model -> { a | language : Language } -> Html.Html msg
 mainSignalOptions targetSignal signal model =
     div []
         [ button [ onClick (targetSignal Stop) ]
@@ -146,7 +147,7 @@ mainSignalOptions targetSignal signal model =
             [ label []
                 [ input
                     [ type_ "radio"
-                    , checked (Zs3.isAbsent (Signal.zs3Model signal))
+                    , checked (Zs3.isAbsent (SignalModel.zs3Model signal))
                     , onClick (targetSignal SetZs3Absent)
                     ]
                     []
@@ -155,7 +156,7 @@ mainSignalOptions targetSignal signal model =
             , label []
                 [ input
                     [ type_ "radio"
-                    , checked (Zs3.isDynamic (Signal.zs3Model signal))
+                    , checked (Zs3.isDynamic (SignalModel.zs3Model signal))
                     , onClick (targetSignal SetZs3Dynamic)
                     ]
                     []
@@ -164,34 +165,34 @@ mainSignalOptions targetSignal signal model =
             , label []
                 [ input
                     [ type_ "radio"
-                    , checked (Zs3.isFixed (Signal.zs3Model signal))
+                    , checked (Zs3.isFixed (SignalModel.zs3Model signal))
                     , onClick (targetSignal SetZs3Fixed)
                     ]
                     []
                 , translate model "Zs3-Schild" "Zs3 sign"
                 ]
             , speedDropdown
-                { active = (hasZs3 signal)
-                , includeUnlimited = Zs3.isDynamic (Signal.zs3Model signal)
+                { active = Zs3.isPresent (SignalModel.zs3Model signal)
+                , includeUnlimited = Zs3.isDynamic (SignalModel.zs3Model signal)
                 , actionMsg = targetSignal
                 }
             ]
         , optionWithButton
-            { toggleActive = hasRa12 signal
+            { toggleActive = SignalModel.hasRa12 signal
             , toggleMsg = targetSignal ToggleHasRa12
             , toggleLabel = translate model "Rangierfahrt erlaubt Sh 1/Ra 12" "Shunting permitted Sh 1/Ra 12"
             , actionMsg = targetSignal StopAndRa12
             , actionLabel = translate model "Aktiv" "Active"
             }
         , optionWithButton
-            { toggleActive = hasZs1 signal
+            { toggleActive = SignalModel.hasZs1 signal
             , toggleMsg = targetSignal ToggleHasZs1
             , toggleLabel = translate model "Ersatzsignal Zs1" "Subsidiary signal Zs1"
             , actionMsg = targetSignal StopAndZs1
             , actionLabel = translate model "Aktiv" "Active"
             }
         , optionWithButton
-            { toggleActive = hasZs7 signal
+            { toggleActive = SignalModel.hasZs7 signal
             , toggleMsg = targetSignal ToggleHasZs7
             , toggleLabel = translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
             , actionMsg = targetSignal StopAndZs7
@@ -279,68 +280,3 @@ speedDropdown options =
                 )
                 speeds
             )
-
-
-shortBrakePath : Signal.Model -> Bool
-shortBrakePath model =
-    case model of
-        Signal.DistantSignal state ->
-            state.shortBrakePath
-
-        Signal.CombinationSignal state ->
-            state.shortBrakePath
-
-        _ ->
-            False
-
-
-hasRa12 : Signal.Model -> Bool
-hasRa12 model =
-    case model of
-        Signal.CombinationSignal state ->
-            state.hasRa12
-
-        Signal.MainSignal state ->
-            state.hasRa12
-
-        _ ->
-            False
-
-
-hasZs1 : Signal.Model -> Bool
-hasZs1 model =
-    case model of
-        Signal.CombinationSignal state ->
-            state.hasZs1
-
-        Signal.MainSignal state ->
-            state.hasZs1
-
-        _ ->
-            False
-
-
-hasZs3 : Signal.Model -> Bool
-hasZs3 model =
-    case model of
-        Signal.CombinationSignal state ->
-            not (state.zs3.appearance == Zs3.Absent)
-
-        Signal.MainSignal state ->
-            not (state.zs3.appearance == Zs3.Absent)
-
-        _ ->
-            False
-
-
-hasZs7 : Signal.Model -> Bool
-hasZs7 model =
-    case model of
-        Signal.CombinationSignal state ->
-            state.hasZs7
-
-        Signal.MainSignal state ->
-            state.hasZs7
-
-        _ ->
-            False

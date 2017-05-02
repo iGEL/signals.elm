@@ -1,10 +1,12 @@
 module KsSignalTests exposing (..)
 
-import Test exposing (..)
 import Expect
-import Signal
+import KsSignal
 import Lamp
 import Messages exposing (..)
+import Signal
+import SignalModel
+import Test exposing (..)
 
 
 all : Test
@@ -15,9 +17,9 @@ all =
                 [ test "Stop" <|
                     \() ->
                         Expect.equal
-                            (Signal.distantSignal
+                            (SignalModel.distantSignal
                                 |> Signal.update (ToDistantSignal Stop)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Absent
@@ -30,9 +32,9 @@ all =
                 , test "Expect Proceed" <|
                     \() ->
                         Expect.equal
-                            (Signal.distantSignal
+                            (SignalModel.distantSignal
                                 |> Signal.update (ToDistantSignal Proceed)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Absent
@@ -45,10 +47,10 @@ all =
                 , test "Expect Proceed with Zs3, but no limit" <|
                     \() ->
                         Expect.equal
-                            (Signal.distantSignal
+                            (SignalModel.distantSignal
                                 |> Signal.update (ToDistantSignal Proceed)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Absent
@@ -61,11 +63,11 @@ all =
                 , test "Expect Proceed with Zs3 and limit" <|
                     \() ->
                         Expect.equal
-                            (Signal.distantSignal
+                            (SignalModel.distantSignal
                                 |> Signal.update (ToDistantSignal Proceed)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetZs3SpeedLimit (Just 5)))
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Absent
@@ -79,10 +81,10 @@ all =
                     [ test "Stop" <|
                         \() ->
                             Expect.equal
-                                (Signal.distantSignal
+                                (SignalModel.distantSignal
                                     |> Signal.update (ToDistantSignal Stop)
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.On
                                 , redLight = Lamp.Absent
@@ -95,10 +97,10 @@ all =
                     , test "Expect Proceed" <|
                         \() ->
                             Expect.equal
-                                (Signal.distantSignal
+                                (SignalModel.distantSignal
                                     |> Signal.update (ToDistantSignal Proceed)
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Off
                                 , redLight = Lamp.Absent
@@ -111,12 +113,12 @@ all =
                     , test "Expect Proceed with Zs3 and limit" <|
                         \() ->
                             Expect.equal
-                                (Signal.distantSignal
+                                (SignalModel.distantSignal
                                     |> Signal.update (ToDistantSignal Proceed)
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                     |> Signal.update (ToDistantSignal (SetZs3SpeedLimit (Just 5)))
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.On
                                 , redLight = Lamp.Absent
@@ -132,10 +134,10 @@ all =
                 [ test "Stop" <|
                     \() ->
                         Expect.equal
-                            (Signal.signalRepeater
+                            (SignalModel.signalRepeater
                                 |> Signal.update (ToDistantSignal Stop)
                                 |> Signal.update (ToDistantSignal ToggleShortBrakePath)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Absent
@@ -148,9 +150,9 @@ all =
                 , test "Expect Proceed" <|
                     \() ->
                         Expect.equal
-                            (Signal.signalRepeater
+                            (SignalModel.signalRepeater
                                 |> Signal.update (ToDistantSignal Proceed)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Absent
@@ -163,10 +165,10 @@ all =
                 , test "Expect Proceed with Zs3, but no limit" <|
                     \() ->
                         Expect.equal
-                            (Signal.signalRepeater
+                            (SignalModel.signalRepeater
                                 |> Signal.update (ToDistantSignal Proceed)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Absent
@@ -179,11 +181,11 @@ all =
                 , test "Expect Proceed with Zs3 and limit" <|
                     \() ->
                         Expect.equal
-                            (Signal.signalRepeater
+                            (SignalModel.signalRepeater
                                 |> Signal.update (ToDistantSignal Proceed)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetZs3SpeedLimit (Just 5)))
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Absent
@@ -198,10 +200,10 @@ all =
                 [ test "Stop (distant Stop)" <|
                     \() ->
                         Expect.equal
-                            (Signal.combinationSignal
+                            (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Stop)
                                 |> Signal.update (ToDistantSignal Stop)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.On
@@ -214,10 +216,10 @@ all =
                 , test "Stop (distant Proceed)" <|
                     \() ->
                         Expect.equal
-                            (Signal.combinationSignal
+                            (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Stop)
                                 |> Signal.update (ToDistantSignal Proceed)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.On
@@ -230,10 +232,10 @@ all =
                 , test "Expect Stop" <|
                     \() ->
                         Expect.equal
-                            (Signal.combinationSignal
+                            (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Proceed)
                                 |> Signal.update (ToDistantSignal Stop)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Off
@@ -246,10 +248,10 @@ all =
                 , test "Expect Proceed" <|
                     \() ->
                         Expect.equal
-                            (Signal.combinationSignal
+                            (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Proceed)
                                 |> Signal.update (ToDistantSignal Proceed)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Off
@@ -262,11 +264,11 @@ all =
                 , test "Expect Proceed with Zs3, but no limit" <|
                     \() ->
                         Expect.equal
-                            (Signal.combinationSignal
+                            (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Proceed)
                                 |> Signal.update (ToDistantSignal Proceed)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Off
@@ -279,12 +281,12 @@ all =
                 , test "Expect Proceed with Zs3 and limit" <|
                     \() ->
                         Expect.equal
-                            (Signal.combinationSignal
+                            (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Proceed)
                                 |> Signal.update (ToDistantSignal Proceed)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetZs3SpeedLimit (Just 5)))
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Off
@@ -298,10 +300,10 @@ all =
                     [ test "Stop" <|
                         \() ->
                             Expect.equal
-                                (Signal.combinationSignal
+                                (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
                                     |> Signal.update (ToMainSignal Stop)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -314,10 +316,10 @@ all =
                     , test "StopAndRa12" <|
                         \() ->
                             Expect.equal
-                                (Signal.combinationSignal
+                                (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
                                     |> Signal.update (ToMainSignal StopAndRa12)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -332,11 +334,11 @@ all =
                     [ test "Stop" <|
                         \() ->
                             Expect.equal
-                                (Signal.combinationSignal
+                                (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal Stop)
                                     |> Signal.update (ToDistantSignal Stop)
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Off
                                 , redLight = Lamp.On
@@ -349,11 +351,11 @@ all =
                     , test "Expect Stop" <|
                         \() ->
                             Expect.equal
-                                (Signal.combinationSignal
+                                (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal Proceed)
                                     |> Signal.update (ToDistantSignal Stop)
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.On
                                 , redLight = Lamp.Off
@@ -366,11 +368,11 @@ all =
                     , test "Expect Proceed" <|
                         \() ->
                             Expect.equal
-                                (Signal.combinationSignal
+                                (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal Proceed)
                                     |> Signal.update (ToDistantSignal Proceed)
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Off
                                 , redLight = Lamp.Off
@@ -383,13 +385,13 @@ all =
                     , test "Expect Proceed with Zs3 and limit" <|
                         \() ->
                             Expect.equal
-                                (Signal.combinationSignal
+                                (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal Proceed)
                                     |> Signal.update (ToDistantSignal Proceed)
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                     |> Signal.update (ToDistantSignal (SetZs3SpeedLimit (Just 5)))
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.On
                                 , redLight = Lamp.Off
@@ -404,10 +406,10 @@ all =
                     [ test "Stop" <|
                         \() ->
                             Expect.equal
-                                (Signal.combinationSignal
+                                (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
                                     |> Signal.update (ToMainSignal Stop)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -420,10 +422,10 @@ all =
                     , test "StopAndZs1" <|
                         \() ->
                             Expect.equal
-                                (Signal.combinationSignal
+                                (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
                                     |> Signal.update (ToMainSignal StopAndZs1)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -438,10 +440,10 @@ all =
                     [ test "Stop" <|
                         \() ->
                             Expect.equal
-                                (Signal.combinationSignal
+                                (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
                                     |> Signal.update (ToMainSignal Stop)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -454,10 +456,10 @@ all =
                     , test "StopAndZs7" <|
                         \() ->
                             Expect.equal
-                                (Signal.combinationSignal
+                                (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
                                     |> Signal.update (ToMainSignal StopAndZs7)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -473,9 +475,9 @@ all =
                 [ test "Stop" <|
                     \() ->
                         Expect.equal
-                            (Signal.mainSignal
+                            (SignalModel.mainSignal
                                 |> Signal.update (ToMainSignal Stop)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.On
@@ -488,9 +490,9 @@ all =
                 , test "Proceed" <|
                     \() ->
                         Expect.equal
-                            (Signal.mainSignal
+                            (SignalModel.mainSignal
                                 |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.ksSignal
+                                |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
                             , redLight = Lamp.Off
@@ -504,10 +506,10 @@ all =
                     [ test "Stop" <|
                         \() ->
                             Expect.equal
-                                (Signal.mainSignal
+                                (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
                                     |> Signal.update (ToMainSignal Stop)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -520,10 +522,10 @@ all =
                     , test "StopAndRa12" <|
                         \() ->
                             Expect.equal
-                                (Signal.mainSignal
+                                (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
                                     |> Signal.update (ToMainSignal StopAndRa12)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -538,10 +540,10 @@ all =
                     [ test "Stop" <|
                         \() ->
                             Expect.equal
-                                (Signal.mainSignal
+                                (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
                                     |> Signal.update (ToMainSignal Stop)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -554,10 +556,10 @@ all =
                     , test "StopAndZs1" <|
                         \() ->
                             Expect.equal
-                                (Signal.mainSignal
+                                (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
                                     |> Signal.update (ToMainSignal StopAndZs1)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -572,10 +574,10 @@ all =
                     [ test "Stop" <|
                         \() ->
                             Expect.equal
-                                (Signal.mainSignal
+                                (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
                                     |> Signal.update (ToMainSignal Stop)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
@@ -588,10 +590,10 @@ all =
                     , test "StopAndZs7" <|
                         \() ->
                             Expect.equal
-                                (Signal.mainSignal
+                                (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
                                     |> Signal.update (ToMainSignal StopAndZs7)
-                                    |> Signal.ksSignal
+                                    |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
                                 , redLight = Lamp.On
