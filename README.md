@@ -35,10 +35,10 @@ signals = { distantSignal = SignalModel.distantSignal
 Any of those signals can be displayed with calling
 
 ```elm
-Signal.view : SignalModel.Model -> Svg msg
+Signal.view : SignalModel.Model -> SignalModel.SignalType -> Svg msg
 
 -- for example:
-Signal.view signals.distantSignal
+Signal.view signals.distantSignal SignalModel.Ks
 ```
 
 For setting an aspect of the signal or configure certain things, have a look at

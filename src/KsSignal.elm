@@ -5,6 +5,7 @@ import Messages exposing (..)
 import SignalModel
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
+import Zs3
 
 
 type alias Model =
@@ -79,7 +80,7 @@ greenLight model =
     let
         distant enabled state =
             if enabled && SignalModel.isProceedState state then
-                if SignalModel.isSpeedLimitState state then
+                if state.zs3 /= Zs3.Absent && SignalModel.isSpeedLimitState state then
                     Lamp.Blinking
                 else
                     Lamp.On
@@ -192,7 +193,7 @@ bottomWhiteLight model =
             SignalModel.DistantSignal state ->
                 case state.extraLight of
                     SignalModel.Repeater ->
-                        if SignalModel.isStopState state || SignalModel.isSpeedLimitState state then
+                        if SignalModel.isStopState state || (state.zs3 /= Zs3.Absent && SignalModel.isSpeedLimitState state) then
                             Lamp.On
                         else
                             Lamp.Off

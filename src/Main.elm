@@ -1,6 +1,6 @@
 module Main exposing (..)
 
-import Html exposing (div, button, label, input, text, table, tr, th, td, select, option)
+import Html exposing (div, button, label, input, text, table, tr, th, td, select, option, span)
 import Html.Attributes exposing (style, type_, checked, disabled, value)
 import Html.Events exposing (onClick)
 import Messages exposing (..)
@@ -14,6 +14,7 @@ type Msg
     = FirstSignalMsg Messages.Msg
     | SecondSignalMsg Messages.Msg
     | SwitchLanguage Language
+    | SetSignalType SignalModel.SignalType
 
 
 type Language
@@ -26,6 +27,7 @@ type alias Model =
     , signalRepeater : SignalModel.Model
     , combinationSignal : SignalModel.Model
     , mainSignal : SignalModel.Model
+    , signalType : SignalModel.SignalType
     , language : Language
     }
 
@@ -46,6 +48,7 @@ init =
       , signalRepeater = SignalModel.signalRepeater
       , combinationSignal = SignalModel.combinationSignal
       , mainSignal = SignalModel.mainSignal
+      , signalType = SignalModel.Ks
       , language = German
       }
     , Cmd.none
@@ -89,6 +92,9 @@ update msg model =
                 , Cmd.none
                 )
 
+        SetSignalType signalType ->
+            ( { model | signalType = signalType }, Cmd.none )
+
         SwitchLanguage language ->
             ( { model | language = language }, Cmd.none )
 
@@ -96,8 +102,31 @@ update msg model =
 view : Model -> Html.Html Msg
 view model =
     div []
-        [ button [ onClick (SwitchLanguage German) ] [ text "Deutsch" ]
-        , button [ onClick (SwitchLanguage English) ] [ text "English" ]
+        [ div []
+            [ button [ onClick (SwitchLanguage German) ] [ text "Deutsch" ]
+            , button [ onClick (SwitchLanguage English) ] [ text "English" ]
+            ]
+        , div []
+            [ translate model "Signaltyp" "Signal type"
+            , label []
+                [ input
+                    [ type_ "radio"
+                    , checked (model.signalType == SignalModel.Ks)
+                    , onClick (SetSignalType SignalModel.Ks)
+                    ]
+                    []
+                , text "KS"
+                ]
+            , label []
+                [ input
+                    [ type_ "radio"
+                    , checked (model.signalType == SignalModel.HvLight)
+                    , onClick (SetSignalType SignalModel.HvLight)
+                    ]
+                    []
+                , translate model "H/V Lichtsignal" "H/V light signal"
+                ]
+            ]
         , table [ style [ ( "margin", "20px" ) ] ]
             [ tr []
                 [ th [] [ translate model "Vorsignal" "Distant Signal" ]
@@ -118,10 +147,10 @@ view model =
                     [ mainSignalOptions SecondSignalMsg model.mainSignal model ]
                 ]
             , tr []
-                [ td [] [ Html.map FirstSignalMsg (Signal.view model.distantSignal) ]
-                , td [] [ Html.map FirstSignalMsg (Signal.view model.signalRepeater) ]
-                , td [] [ Html.map FirstSignalMsg (Signal.view model.combinationSignal) ]
-                , td [] [ Html.map FirstSignalMsg (Signal.view model.mainSignal) ]
+                [ td [] [ Html.map FirstSignalMsg (Signal.view model.distantSignal model.signalType) ]
+                , td [] [ Html.map FirstSignalMsg (Signal.view model.signalRepeater model.signalType) ]
+                , td [] [ Html.map FirstSignalMsg (Signal.view model.combinationSignal model.signalType) ]
+                , td [] [ Html.map FirstSignalMsg (Signal.view model.mainSignal model.signalType) ]
                 ]
             ]
         ]
@@ -136,7 +165,7 @@ distantSignalOptions targetSignal signal model =
         }
 
 
-mainSignalOptions : (Messages.Msg -> msg) -> SignalModel.Model -> { a | language : Language } -> Html.Html msg
+mainSignalOptions : (Messages.Msg -> msg) -> SignalModel.Model -> Model -> Html.Html msg
 mainSignalOptions targetSignal signal model =
     div []
         [ button [ onClick (targetSignal Stop) ]
@@ -171,11 +200,14 @@ mainSignalOptions targetSignal signal model =
                     []
                 , translate model "Zs3-Schild" "Zs3 sign"
                 ]
-            , speedDropdown
-                { active = Zs3.isPresent (SignalModel.zs3 signal)
-                , includeUnlimited = Zs3.isDynamic (SignalModel.zs3 signal)
-                , actionMsg = targetSignal
-                }
+            , if model.signalType == SignalModel.HvLight then
+                label []
+                    [ input [ type_ "checkbox", onClick (targetSignal ToggleHasProceedSlowly) ] []
+                    , translate model "Langsamfahrt" "Proceed slowly"
+                    ]
+              else
+                span [] []
+            , speedDropdown targetSignal (SignalModel.availableSpeedLimits model.signalType signal) (SignalModel.mainSignalSpeedLimit signal)
             ]
         , optionWithButton
             { toggleActive = SignalModel.hasRa12 signal
@@ -236,47 +268,31 @@ optionWithButton options =
         ]
 
 
-speedDropdown : { a | actionMsg : Messages.Msg -> msg, active : Bool, includeUnlimited : Bool } -> Html.Html msg
-speedDropdown options =
-    let
-        speeds =
-            if options.includeUnlimited then
-                List.append (List.range 1 15) [ 0 ]
-            else
-                List.range 1 15
-    in
-        select
-            [ onSelectChange
-                (\selectedValue ->
-                    let
-                        selectedValueInt =
-                            selectedValue
-                                |> String.toInt
-                                |> Result.withDefault 0
-
-                        selectedSpeed =
-                            if selectedValueInt == 0 then
-                                Nothing
-                            else
-                                Just selectedValueInt
-                    in
-                        selectedSpeed
-                            |> SetZs3SpeedLimit
-                            |> options.actionMsg
-                )
-            , disabled (not options.active)
-            ]
-            (List.map
-                (\speed ->
-                    option
-                        [ value (toString speed) ]
-                        [ text
-                            (if speed == 0 then
-                                "∞"
-                             else
-                                ((toString (speed * 10)) ++ " km/h")
-                            )
-                        ]
-                )
-                speeds
+speedDropdown : (Messages.Msg -> msg) -> List (Maybe Int) -> Maybe Int -> Html.Html msg
+speedDropdown targetSignal speedOptions selectedSpeed =
+    select
+        [ onSelectChange
+            (\selectedValue ->
+                selectedValue
+                    |> String.toInt
+                    |> Result.toMaybe
+                    |> SetSpeedLimit
+                    |> targetSignal
             )
+        , disabled (List.length speedOptions < 2)
+        ]
+        (List.map
+            (\speedOption ->
+                case speedOption of
+                    Nothing ->
+                        option [ value "infinity", Html.Attributes.selected (selectedSpeed == Nothing) ] [ text "∞" ]
+
+                    Just speed ->
+                        option
+                            [ value (toString speed), Html.Attributes.selected (selectedSpeed == Just speed) ]
+                            [ text
+                                ((toString (speed * 10)) ++ " km/h")
+                            ]
+            )
+            speedOptions
+        )

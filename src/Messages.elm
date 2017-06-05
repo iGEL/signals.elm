@@ -16,7 +16,8 @@ type Msg
     | SetZs3Absent
     | SetZs3Dynamic
     | SetZs3Fixed
-    | SetZs3SpeedLimit (Maybe SpeedLimit)
+    | SetSpeedLimit (Maybe SpeedLimit)
+    | ToggleHasProceedSlowly
     | ToggleHasZs7
     | ToggleHasRa12
     | ToggleShortBrakePath

@@ -1,6 +1,7 @@
 module Signal exposing (..)
 
 import KsSignal
+import HvSignal
 import Messages exposing (..)
 import SignalModel exposing (..)
 import Svg exposing (..)
@@ -53,11 +54,17 @@ updateSignal msg state =
                             SignalModel.Repeater
             }
 
+        ToggleHasProceedSlowly ->
+            { state | hasProceedSlowly = not state.hasProceedSlowly }
+
         ToggleHasRa12 ->
             { state | hasRa12 = not state.hasRa12 }
 
         ToggleHasZs1 ->
             { state | hasZs1 = not state.hasZs1 }
+
+        ToggleHasZs7 ->
+            { state | hasZs7 = not state.hasZs7 }
 
         SetZs3Absent ->
             { state | zs3 = Zs3.Absent }
@@ -68,21 +75,41 @@ updateSignal msg state =
         SetZs3Fixed ->
             { state | zs3 = Zs3.Fixed }
 
-        SetZs3SpeedLimit maybeSpeedLimit ->
+        SetSpeedLimit maybeSpeedLimit ->
             { state | speedLimit = maybeSpeedLimit }
-
-        ToggleHasZs7 ->
-            { state | hasZs7 = not state.hasZs7 }
 
         _ ->
             { state | aspect = msg }
 
 
-view : Model -> Svg msg
-view model =
-    svg [ version "1.1", viewBox "0 0 70 300", width "200" ]
-        [ Svg.style []
-            [ text """
+view : Model -> SignalType -> Svg msg
+view model signalType =
+    let
+        zs3 =
+            case model of
+                MainSignal state ->
+                    Zs3.view Zs3.MainSignalLocation state.zs3 state.speedLimit (isStopState state)
+
+                CombinationSignal states ->
+                    Zs3.view Zs3.MainSignalLocation states.mainSignal.zs3 states.mainSignal.speedLimit (isStopState states.mainSignal)
+
+                _ ->
+                    g [] []
+
+        zs3v =
+            case model of
+                DistantSignal state ->
+                    Zs3.view Zs3.DistantSignalLocation state.zs3 state.speedLimit (isStopState state)
+
+                CombinationSignal states ->
+                    Zs3.view Zs3.DistantSignalLocation states.distantSignal.zs3 states.distantSignal.speedLimit (isStopState states.distantSignal || isStopState states.mainSignal)
+
+                _ ->
+                    g [] []
+    in
+        svg [ version "1.1", viewBox "0 0 110 500", width "150" ]
+            [ Svg.style []
+                [ text """
                     circle { stroke-width: 0.4; stroke-opacity: 0.85; stroke: #333; }
                     .green { fill:url(#green-gradient) }
                     .green.on { filter: drop-shadow(0 0 5px #00bd4a) }
@@ -106,58 +133,43 @@ view model =
                     }
                     circle.blinking { animation: blinking 2s ease infinite }
                     """
-            ]
-        , defs []
-            [ radialGradient [ id "green-gradient" ]
-                [ stop [ stopColor "#33ff6d", offset "0.05" ] []
-                , stop [ stopColor "#00bd4a", offset "0.9" ] []
                 ]
-            , radialGradient [ id "red-gradient" ]
-                [ stop [ stopColor "#ff3763", offset "0.05" ] []
-                , stop [ stopColor "#da012a", offset "0.9" ] []
+            , defs []
+                [ radialGradient [ id "green-gradient" ]
+                    [ stop [ stopColor "#33ff6d", offset "0.05" ] []
+                    , stop [ stopColor "#00bd4a", offset "0.9" ] []
+                    ]
+                , radialGradient [ id "red-gradient" ]
+                    [ stop [ stopColor "#ff3763", offset "0.05" ] []
+                    , stop [ stopColor "#da012a", offset "0.9" ] []
+                    ]
+                , radialGradient [ id "orange-gradient" ]
+                    [ stop [ stopColor "#ffc955", offset "0.05" ] []
+                    , stop [ stopColor "#fc8e00", offset "0.9" ] []
+                    ]
+                , radialGradient [ id "yellow-gradient" ]
+                    [ stop [ stopColor "#ffe060", offset "0.05" ] []
+                    , stop [ stopColor "#fac412", offset "0.9" ] []
+                    ]
+                , radialGradient [ id "white-gradient" ]
+                    [ stop [ stopColor "#fffaef", offset "0.05" ] []
+                    , stop [ stopColor "#ebe6d8", offset "0.9" ] []
+                    ]
                 ]
-            , radialGradient [ id "orange-gradient" ]
-                [ stop [ stopColor "#ffc955", offset "0.05" ] []
-                , stop [ stopColor "#fc8e00", offset "0.9" ] []
-                ]
-            , radialGradient [ id "yellow-gradient" ]
-                [ stop [ stopColor "#ffe060", offset "0.05" ] []
-                , stop [ stopColor "#fac412", offset "0.9" ] []
-                ]
-            , radialGradient [ id "white-gradient" ]
-                [ stop [ stopColor "#fffaef", offset "0.05" ] []
-                , stop [ stopColor "#ebe6d8", offset "0.9" ] []
-                ]
-            ]
-        , g []
-            [ case model of
-                MainSignal state ->
-                    Zs3.view Zs3.MainSignalLocation state.zs3 state.speedLimit (isStopState state)
+            , g []
+                (case signalType of
+                    Ks ->
+                        [ zs3
+                        , g [ transform "translate(3, 65)" ]
+                            (model |> KsSignal.lights |> KsSignal.view)
+                        , g [ transform "translate(0, 168)" ] [ zs3v ]
+                        ]
 
-                CombinationSignal states ->
-                    Zs3.view Zs3.MainSignalLocation states.mainSignal.zs3 states.mainSignal.speedLimit (isStopState states.mainSignal)
-
-                _ ->
-                    g [] []
+                    HvLight ->
+                        [ g [ transform "translate(19, 0)" ] [ zs3 ]
+                        , g [ transform "translate(3, 65)" ]
+                            (model |> HvSignal.lights |> HvSignal.view)
+                        , g [ transform "translate(19, 350)" ] [ zs3v ]
+                        ]
+                )
             ]
-        , g [ transform "translate(3, 65)" ]
-            (model |> KsSignal.lights |> KsSignal.view)
-        , g [ transform "translate(0, 168)" ]
-            [ let
-                speedLimitUnlessStop state =
-                    if isStopState state then
-                        Nothing
-                    else
-                        state.speedLimit
-              in
-                case model of
-                    DistantSignal state ->
-                        Zs3.view Zs3.DistantSignalLocation state.zs3 state.speedLimit (isStopState state)
-
-                    CombinationSignal states ->
-                        Zs3.view Zs3.DistantSignalLocation states.distantSignal.zs3 states.distantSignal.speedLimit (isStopState states.distantSignal || isStopState states.mainSignal)
-
-                    _ ->
-                        g [] []
-            ]
-        ]

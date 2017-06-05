@@ -14,6 +14,7 @@ type alias StateModel =
     { aspect : Messages.Msg
     , speedLimit : Maybe Int
     , extraLight : ExtraLight
+    , hasProceedSlowly : Bool
     , hasRa12 : Bool
     , hasZs1 : Bool
     , hasZs7 : Bool
@@ -27,11 +28,17 @@ type Model
     | MainSignal StateModel
 
 
+type SignalType
+    = Ks
+    | HvLight
+
+
 defaultStateModel : StateModel
 defaultStateModel =
     { aspect = Stop
     , speedLimit = Nothing
     , extraLight = Absent
+    , hasProceedSlowly = False
     , hasRa12 = False
     , hasZs1 = False
     , hasZs7 = False
@@ -243,3 +250,68 @@ hasExpectedSpeedLimit model =
 
         MainSignal _ ->
             False
+
+
+mainSignalSpeedLimit : Model -> Maybe Int
+mainSignalSpeedLimit model =
+    case model of
+        DistantSignal _ ->
+            Nothing
+
+        CombinationSignal states ->
+            states.mainSignal.speedLimit
+
+        MainSignal state ->
+            state.speedLimit
+
+
+availableSpeedLimits : SignalType -> Model -> List (Maybe Int)
+availableSpeedLimits signalType model =
+    let
+        zs3Speeds =
+            List.range 1 15
+                |> List.map Just
+
+        fromZs3 zs3 =
+            case zs3 of
+                Zs3.Absent ->
+                    [ Nothing ]
+
+                Zs3.Fixed ->
+                    zs3Speeds
+
+                Zs3.Dynamic ->
+                    List.append zs3Speeds [ Nothing ]
+    in
+        case signalType of
+            Ks ->
+                case model of
+                    DistantSignal _ ->
+                        []
+
+                    CombinationSignal states ->
+                        fromZs3 states.mainSignal.zs3
+
+                    MainSignal state ->
+                        fromZs3 state.zs3
+
+            HvLight ->
+                let
+                    fromHvState state =
+                        if state.zs3 == Zs3.Absent then
+                            if state.hasProceedSlowly || state.hasRa12 then
+                                [ Just 4, Nothing ]
+                            else
+                                [ Nothing ]
+                        else
+                            fromZs3 state.zs3
+                in
+                    case model of
+                        DistantSignal _ ->
+                            []
+
+                        CombinationSignal states ->
+                            fromHvState states.mainSignal
+
+                        MainSignal state ->
+                            fromHvState state

@@ -44,6 +44,24 @@ all =
                             , zs7Lights = Lamp.Absent
                             , bottomWhiteLight = Lamp.Absent
                             }
+                , describe "Expect Proceed with speed limit without Zs3"
+                    [ test "shows the same as without speed limit (no blinking green)" <|
+                        \() ->
+                            Expect.equal
+                                (SignalModel.distantSignal
+                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 4)))
+                                    |> KsSignal.lights
+                                )
+                                { topWhiteLight = Lamp.Absent
+                                , redLight = Lamp.Absent
+                                , greenLight = Lamp.On
+                                , orangeLight = Lamp.Off
+                                , centerWhiteLight = Lamp.Absent
+                                , zs7Lights = Lamp.Absent
+                                , bottomWhiteLight = Lamp.Absent
+                                }
+                    ]
                 , test "Expect Proceed with Zs3, but no limit" <|
                     \() ->
                         Expect.equal
@@ -66,7 +84,7 @@ all =
                             (SignalModel.distantSignal
                                 |> Signal.update (ToDistantSignal Proceed)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
-                                |> Signal.update (ToDistantSignal (SetZs3SpeedLimit (Just 5)))
+                                |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 5)))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -117,7 +135,7 @@ all =
                                     |> Signal.update (ToDistantSignal Proceed)
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> Signal.update (ToDistantSignal SetZs3Dynamic)
-                                    |> Signal.update (ToDistantSignal (SetZs3SpeedLimit (Just 5)))
+                                    |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 5)))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.On
@@ -162,6 +180,24 @@ all =
                             , zs7Lights = Lamp.Absent
                             , bottomWhiteLight = Lamp.Off
                             }
+                , describe "Expect Proceed with speed limit without Zs3"
+                    [ test "shows the same as without speed limit (no blinking green)" <|
+                        \() ->
+                            Expect.equal
+                                (SignalModel.signalRepeater
+                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 4)))
+                                    |> KsSignal.lights
+                                )
+                                { topWhiteLight = Lamp.Absent
+                                , redLight = Lamp.Absent
+                                , greenLight = Lamp.On
+                                , orangeLight = Lamp.Off
+                                , centerWhiteLight = Lamp.Absent
+                                , zs7Lights = Lamp.Absent
+                                , bottomWhiteLight = Lamp.Off
+                                }
+                    ]
                 , test "Expect Proceed with Zs3, but no limit" <|
                     \() ->
                         Expect.equal
@@ -184,7 +220,7 @@ all =
                             (SignalModel.signalRepeater
                                 |> Signal.update (ToDistantSignal Proceed)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
-                                |> Signal.update (ToDistantSignal (SetZs3SpeedLimit (Just 5)))
+                                |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 5)))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -278,6 +314,25 @@ all =
                             , zs7Lights = Lamp.Absent
                             , bottomWhiteLight = Lamp.Absent
                             }
+                , describe "Expect Proceed with speed limit without Zs3"
+                    [ test "shows the same as without speed limit (no blinking green)" <|
+                        \() ->
+                            Expect.equal
+                                (SignalModel.combinationSignal
+                                    |> Signal.update (ToMainSignal Proceed)
+                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 4)))
+                                    |> KsSignal.lights
+                                )
+                                { topWhiteLight = Lamp.Absent
+                                , redLight = Lamp.Off
+                                , greenLight = Lamp.On
+                                , orangeLight = Lamp.Off
+                                , centerWhiteLight = Lamp.Absent
+                                , zs7Lights = Lamp.Absent
+                                , bottomWhiteLight = Lamp.Absent
+                                }
+                    ]
                 , test "Expect Proceed with Zs3 and limit" <|
                     \() ->
                         Expect.equal
@@ -285,7 +340,7 @@ all =
                                 |> Signal.update (ToMainSignal Proceed)
                                 |> Signal.update (ToDistantSignal Proceed)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
-                                |> Signal.update (ToDistantSignal (SetZs3SpeedLimit (Just 5)))
+                                |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 5)))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -390,7 +445,7 @@ all =
                                     |> Signal.update (ToDistantSignal Proceed)
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> Signal.update (ToDistantSignal SetZs3Dynamic)
-                                    |> Signal.update (ToDistantSignal (SetZs3SpeedLimit (Just 5)))
+                                    |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 5)))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.On
