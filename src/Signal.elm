@@ -155,7 +155,7 @@ view model =
                         Zs3.view Zs3.DistantSignalLocation state.zs3 state.speedLimit (isStopState state)
 
                     CombinationSignal states ->
-                        Zs3.view Zs3.DistantSignalLocation states.distantSignal.zs3 states.distantSignal.speedLimit (isStopState states.distantSignal)
+                        Zs3.view Zs3.DistantSignalLocation states.distantSignal.zs3 states.distantSignal.speedLimit (isStopState states.distantSignal || isStopState states.mainSignal)
 
                     _ ->
                         g [] []
