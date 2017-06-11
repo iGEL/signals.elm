@@ -11,91 +11,71 @@ import Zs3
 update : Messages.Target -> Model -> Model
 update target model =
     case model of
-        DistantSignal signalState ->
+        DistantSignal state ->
             case target of
                 ToDistantSignal msg ->
-                    DistantSignal (updateDistantSignal msg signalState)
+                    DistantSignal (updateSignal msg state)
 
                 _ ->
                     model
 
-        CombinationSignal signalState ->
+        CombinationSignal states ->
             case target of
                 ToDistantSignal msg ->
-                    CombinationSignal (updateDistantSignal msg signalState)
+                    CombinationSignal { states | distantSignal = updateSignal msg states.distantSignal }
 
                 ToMainSignal msg ->
-                    CombinationSignal (updateMainSignal msg signalState)
+                    CombinationSignal { states | mainSignal = updateSignal msg states.mainSignal }
 
-        MainSignal signalState ->
+        MainSignal state ->
             case target of
                 ToMainSignal msg ->
-                    MainSignal (updateMainSignal msg signalState)
+                    MainSignal (updateSignal msg state)
 
                 _ ->
                     model
 
 
-updateDistantSignal : Msg -> { a | distantState : Msg, shortBrakePath : Bool, zs3v : Zs3.Model } -> { a | distantState : Msg, shortBrakePath : Bool, zs3v : Zs3.Model }
-updateDistantSignal msg signalState =
+updateSignal : Msg -> SignalModel.StateModel -> SignalModel.StateModel
+updateSignal msg state =
     case msg of
         ToggleShortBrakePath ->
-            { signalState | shortBrakePath = not signalState.shortBrakePath }
+            { state
+                | extraLight =
+                    case state.extraLight of
+                        SignalModel.ShortenedBrakePath ->
+                            SignalModel.Absent
+
+                        SignalModel.Absent ->
+                            SignalModel.ShortenedBrakePath
+
+                        SignalModel.Repeater ->
+                            SignalModel.Repeater
+            }
 
         ToggleHasRa12 ->
-            signalState
+            { state | hasRa12 = not state.hasRa12 }
 
         ToggleHasZs1 ->
-            signalState
+            { state | hasZs1 = not state.hasZs1 }
 
         SetZs3Absent ->
-            { signalState | zs3v = Zs3.update msg signalState.zs3v }
+            { state | zs3 = Zs3.Absent }
 
         SetZs3Dynamic ->
-            { signalState | zs3v = Zs3.update msg signalState.zs3v }
+            { state | zs3 = Zs3.Dynamic }
 
         SetZs3Fixed ->
-            { signalState | zs3v = Zs3.update msg signalState.zs3v }
+            { state | zs3 = Zs3.Fixed }
 
-        SetZs3SpeedLimit _ ->
-            { signalState | zs3v = Zs3.update msg signalState.zs3v }
-
-        ToggleHasZs7 ->
-            signalState
-
-        _ ->
-            { signalState | distantState = msg }
-
-
-updateMainSignal : Msg -> { a | mainState : Msg, hasRa12 : Bool, hasZs1 : Bool, hasZs7 : Bool, zs3 : Zs3.Model } -> { a | mainState : Msg, hasRa12 : Bool, hasZs1 : Bool, hasZs7 : Bool, zs3 : Zs3.Model }
-updateMainSignal msg signalState =
-    case msg of
-        ToggleShortBrakePath ->
-            signalState
-
-        ToggleHasRa12 ->
-            { signalState | hasRa12 = not signalState.hasRa12 }
-
-        ToggleHasZs1 ->
-            { signalState | hasZs1 = not signalState.hasZs1 }
-
-        SetZs3Absent ->
-            { signalState | zs3 = Zs3.update msg signalState.zs3 }
-
-        SetZs3Dynamic ->
-            { signalState | zs3 = Zs3.update msg signalState.zs3 }
-
-        SetZs3Fixed ->
-            { signalState | zs3 = Zs3.update msg signalState.zs3 }
-
-        SetZs3SpeedLimit _ ->
-            { signalState | zs3 = Zs3.update msg signalState.zs3 }
+        SetZs3SpeedLimit maybeSpeedLimit ->
+            { state | speedLimit = maybeSpeedLimit }
 
         ToggleHasZs7 ->
-            { signalState | hasZs7 = not signalState.hasZs7 }
+            { state | hasZs7 = not state.hasZs7 }
 
         _ ->
-            { signalState | mainState = msg }
+            { state | aspect = msg }
 
 
 view : Model -> Svg msg
@@ -151,11 +131,11 @@ view model =
             ]
         , g []
             [ case model of
-                MainSignal signal ->
-                    Zs3.view signal.zs3 (isStop signal)
+                MainSignal state ->
+                    Zs3.view Zs3.MainSignalLocation state.zs3 state.speedLimit (isStopState state)
 
-                CombinationSignal signal ->
-                    Zs3.view signal.zs3 (isStop signal)
+                CombinationSignal states ->
+                    Zs3.view Zs3.MainSignalLocation states.mainSignal.zs3 states.mainSignal.speedLimit (isStopState states.mainSignal)
 
                 _ ->
                     g [] []
@@ -163,14 +143,21 @@ view model =
         , g [ transform "translate(3, 65)" ]
             (model |> KsSignal.lights |> KsSignal.view)
         , g [ transform "translate(0, 168)" ]
-            [ case model of
-                DistantSignal signal ->
-                    Zs3.view signal.zs3v (isExpectStop signal)
+            [ let
+                speedLimitUnlessStop state =
+                    if isStopState state then
+                        Nothing
+                    else
+                        state.speedLimit
+              in
+                case model of
+                    DistantSignal state ->
+                        Zs3.view Zs3.DistantSignalLocation state.zs3 state.speedLimit (isStopState state)
 
-                CombinationSignal signal ->
-                    Zs3.view signal.zs3v (isExpectStop signal || isStop signal)
+                    CombinationSignal states ->
+                        Zs3.view Zs3.DistantSignalLocation states.distantSignal.zs3 states.distantSignal.speedLimit (isStopState states.distantSignal)
 
-                _ ->
-                    g [] []
+                    _ ->
+                        g [] []
             ]
         ]

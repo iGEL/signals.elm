@@ -127,10 +127,10 @@ view model =
         ]
 
 
-distantSignalOptions : (Messages.Msg -> b) -> SignalModel.Model -> { a | language : Language } -> Html.Html b
+distantSignalOptions : (Messages.Msg -> msg) -> SignalModel.Model -> { a | language : Language } -> Html.Html msg
 distantSignalOptions targetSignal signal model =
     optionWithoutButton
-        { toggleActive = SignalModel.shortBrakePath signal
+        { toggleActive = SignalModel.shortenedBrakePath signal
         , toggleMsg = targetSignal ToggleShortBrakePath
         , toggleLabel = translate model "> 5% verkürzter Bremsweg" "> 5% shortened brake path"
         }
@@ -147,7 +147,7 @@ mainSignalOptions targetSignal signal model =
             [ label []
                 [ input
                     [ type_ "radio"
-                    , checked (Zs3.isAbsent (SignalModel.zs3Model signal))
+                    , checked (Zs3.isAbsent (SignalModel.zs3 signal))
                     , onClick (targetSignal SetZs3Absent)
                     ]
                     []
@@ -156,7 +156,7 @@ mainSignalOptions targetSignal signal model =
             , label []
                 [ input
                     [ type_ "radio"
-                    , checked (Zs3.isDynamic (SignalModel.zs3Model signal))
+                    , checked (Zs3.isDynamic (SignalModel.zs3 signal))
                     , onClick (targetSignal SetZs3Dynamic)
                     ]
                     []
@@ -165,15 +165,15 @@ mainSignalOptions targetSignal signal model =
             , label []
                 [ input
                     [ type_ "radio"
-                    , checked (Zs3.isFixed (SignalModel.zs3Model signal))
+                    , checked (Zs3.isFixed (SignalModel.zs3 signal))
                     , onClick (targetSignal SetZs3Fixed)
                     ]
                     []
                 , translate model "Zs3-Schild" "Zs3 sign"
                 ]
             , speedDropdown
-                { active = Zs3.isPresent (SignalModel.zs3Model signal)
-                , includeUnlimited = Zs3.isDynamic (SignalModel.zs3Model signal)
+                { active = Zs3.isPresent (SignalModel.zs3 signal)
+                , includeUnlimited = Zs3.isDynamic (SignalModel.zs3 signal)
                 , actionMsg = targetSignal
                 }
             ]

@@ -9,173 +9,70 @@ import Messages exposing (..)
 
 type Appearance
     = Absent
-    | Dynamic (Maybe SpeedLimit)
-    | Fixed SpeedLimit
+    | Dynamic
+    | Fixed
 
 
 type Location
-    = DistantLocation
-    | MainLocation
+    = DistantSignalLocation
+    | MainSignalLocation
 
 
-type alias Model =
-    { appearance : Appearance
-    , location : Location
-    }
+isAbsent : Appearance -> Bool
+isAbsent appearance =
+    appearance == Absent
 
 
-distantSignal : Model
-distantSignal =
-    { appearance = Absent
-    , location = DistantLocation
-    }
+isPresent : Appearance -> Bool
+isPresent appearance =
+    not (isAbsent appearance)
 
 
-mainSignal : Model
-mainSignal =
-    { appearance = Absent
-    , location = MainLocation
-    }
+isDynamic : Appearance -> Bool
+isDynamic appearance =
+    appearance == Dynamic
 
 
-update : Msg -> Model -> Model
-update msg model =
-    case msg of
-        SetZs3Absent ->
-            { model | appearance = Absent }
-
-        SetZs3Dynamic ->
-            { model | appearance = Dynamic (currentSpeedOrNothing model.appearance) }
-
-        SetZs3Fixed ->
-            { model | appearance = Fixed (currentSpeedOrDefault model.appearance) }
-
-        SetZs3SpeedLimit possibleSpeedLimit ->
-            case model.appearance of
-                Fixed _ ->
-                    case possibleSpeedLimit of
-                        Just speedLimit ->
-                            { model | appearance = Fixed speedLimit }
-
-                        Nothing ->
-                            model
-
-                Dynamic _ ->
-                    { model | appearance = Dynamic possibleSpeedLimit }
-
-                Absent ->
-                    model
-
-        _ ->
-            model
+isFixed : Appearance -> Bool
+isFixed appearance =
+    appearance == Fixed
 
 
-view : Model -> Bool -> Svg msg
-view model displayForcedOff =
-    case model.appearance of
-        Dynamic possibleSpeedLimit ->
+view : Location -> Appearance -> Maybe Int -> Bool -> Svg msg
+view location appearance maybeSpeedLimit signalShowsStop =
+    case appearance of
+        Dynamic ->
             g [ transform "translate(8,19)" ]
                 [ let
                     color =
-                        case model.location of
-                            MainLocation ->
+                        case location of
+                            MainSignalLocation ->
                                 "white"
 
-                            DistantLocation ->
+                            DistantSignalLocation ->
                                 "orange"
                   in
-                    if displayForcedOff then
-                        Display.view color Off
-                    else
-                        case possibleSpeedLimit of
-                            Just speedLimit ->
+                    case maybeSpeedLimit of
+                        Just speedLimit ->
+                            if signalShowsStop then
+                                Display.view color Off
+                            else
                                 Display.view color (On (toString speedLimit))
 
-                            Nothing ->
-                                Display.view color Off
+                        Nothing ->
+                            Display.view color Off
                 ]
 
-        Fixed speedLimit ->
-            viewFixed model.location speedLimit
-
-        _ ->
-            g [] []
-
-
-hasSpeedLimit : Model -> Bool
-hasSpeedLimit model =
-    case model.appearance of
-        Absent ->
-            False
-
-        Fixed _ ->
-            True
-
-        Dynamic possibleSpeedLimit ->
-            case possibleSpeedLimit of
-                Just _ ->
-                    True
+        Fixed ->
+            case maybeSpeedLimit of
+                Just speedLimit ->
+                    viewFixed location speedLimit
 
                 Nothing ->
-                    False
+                    g [] []
 
-
-isAbsent : Model -> Bool
-isAbsent model =
-    case model.appearance of
         Absent ->
-            True
-
-        _ ->
-            False
-
-
-isPresent : Model -> Bool
-isPresent model =
-    not (isAbsent model)
-
-
-isFixed : Model -> Bool
-isFixed model =
-    case model.appearance of
-        Fixed _ ->
-            True
-
-        _ ->
-            False
-
-
-isDynamic : Model -> Bool
-isDynamic model =
-    case model.appearance of
-        Dynamic _ ->
-            True
-
-        _ ->
-            False
-
-
-currentSpeedOrDefault : Appearance -> SpeedLimit
-currentSpeedOrDefault appearance =
-    case (currentSpeedOrNothing appearance) of
-        Just speedLimit ->
-            speedLimit
-
-        Nothing ->
-            4
-
-
-currentSpeedOrNothing : Appearance -> Maybe SpeedLimit
-currentSpeedOrNothing appearance =
-    case appearance of
-        Absent ->
-            Nothing
-
-        Fixed speedLimit ->
-            Just speedLimit
-
-        Dynamic possibleSpeedLimit ->
-            possibleSpeedLimit
+            g [] []
 
 
 digitPaths : Array.Array (List { mainHead : String, distantHead : String, rest : String })
@@ -312,7 +209,7 @@ viewFixed location speed =
             List.map (\path -> Svg.path [ d (path.distantHead ++ path.rest) ] []) paths
     in
         case location of
-            DistantLocation ->
+            DistantSignalLocation ->
                 g [ transform "translate(10,12)" ]
                     [ polygon
                         [ Svg.Attributes.style "fill: #ff0; stroke: black;stroke-width: 0.5"
@@ -324,7 +221,7 @@ viewFixed location speed =
                         (distantPaths speedSvgPaths)
                     ]
 
-            MainLocation ->
+            MainSignalLocation ->
                 g [ transform "translate(60,70) rotate(180)" ]
                     [ polygon
                         [ Svg.Attributes.style "fill: #fff; stroke: black;stroke-width: 0.5"

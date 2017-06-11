@@ -5,7 +5,6 @@ import Messages exposing (..)
 import SignalModel
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
-import Zs3
 
 
 type alias Model =
@@ -34,44 +33,39 @@ lights model =
 topWhiteLight : SignalModel.Model -> Lamp.State
 topWhiteLight model =
     let
-        topWhiteLight notForcedOff state =
-            case state.shortBrakePath of
-                False ->
-                    Lamp.Absent
-
-                True ->
-                    if notForcedOff && (SignalModel.isExpectStop state || Zs3.hasSpeedLimit state.zs3v) then
+        topWhiteLight enabled state =
+            case state.extraLight of
+                SignalModel.ShortenedBrakePath ->
+                    if enabled && (SignalModel.isStopState state || SignalModel.isSpeedLimitState state) then
                         Lamp.On
                     else
                         Lamp.Off
+
+                _ ->
+                    Lamp.Absent
     in
         case model of
             SignalModel.MainSignal _ ->
                 Lamp.Absent
 
-            SignalModel.CombinationSignal state ->
-                topWhiteLight (SignalModel.isProceed state) state
+            SignalModel.CombinationSignal states ->
+                topWhiteLight (SignalModel.isProceed model) states.distantSignal
 
             SignalModel.DistantSignal state ->
-                case state.repeater of
-                    True ->
-                        Lamp.Absent
-
-                    False ->
-                        topWhiteLight True state
+                topWhiteLight True state
 
 
 redLight : SignalModel.Model -> Lamp.State
 redLight model =
     case model of
         SignalModel.MainSignal state ->
-            if SignalModel.isStop state then
+            if SignalModel.isStopState state then
                 Lamp.On
             else
                 Lamp.Off
 
-        SignalModel.CombinationSignal state ->
-            if SignalModel.isStop state then
+        SignalModel.CombinationSignal states ->
+            if SignalModel.isStopState states.mainSignal then
                 Lamp.On
             else
                 Lamp.Off
@@ -84,8 +78,8 @@ greenLight : SignalModel.Model -> Lamp.State
 greenLight model =
     let
         distant enabled state =
-            if enabled && SignalModel.isExpectProceed state then
-                if Zs3.hasSpeedLimit state.zs3v then
+            if enabled && SignalModel.isProceedState state then
+                if SignalModel.isSpeedLimitState state then
                     Lamp.Blinking
                 else
                     Lamp.On
@@ -94,13 +88,13 @@ greenLight model =
     in
         case model of
             SignalModel.MainSignal state ->
-                if SignalModel.isProceed state then
+                if SignalModel.isProceedState state then
                     Lamp.On
                 else
                     Lamp.Off
 
-            SignalModel.CombinationSignal state ->
-                distant (SignalModel.isProceed state) state
+            SignalModel.CombinationSignal states ->
+                distant (SignalModel.isProceedState states.mainSignal) states.distantSignal
 
             SignalModel.DistantSignal state ->
                 distant True state
@@ -110,7 +104,7 @@ orangeLight : SignalModel.Model -> Lamp.State
 orangeLight model =
     let
         distant enabled state =
-            if enabled && SignalModel.isExpectStop state then
+            if enabled && SignalModel.isStopState state then
                 Lamp.On
             else
                 Lamp.Off
@@ -119,8 +113,8 @@ orangeLight model =
             SignalModel.MainSignal _ ->
                 Lamp.Absent
 
-            SignalModel.CombinationSignal state ->
-                distant (SignalModel.isProceed state) state
+            SignalModel.CombinationSignal states ->
+                distant (SignalModel.isProceedState states.mainSignal) states.distantSignal
 
             SignalModel.DistantSignal state ->
                 distant True state
@@ -131,9 +125,9 @@ centerWhiteLight model =
     let
         main isMainSignal state =
             if state.hasRa12 || (isMainSignal && state.hasZs1) then
-                if state.mainState == StopAndRa12 then
+                if state.aspect == StopAndRa12 then
                     Lamp.On
-                else if state.mainState == StopAndZs1 && isMainSignal then
+                else if state.aspect == StopAndZs1 && isMainSignal then
                     Lamp.Blinking
                 else
                     Lamp.Off
@@ -144,8 +138,8 @@ centerWhiteLight model =
             SignalModel.MainSignal state ->
                 main True state
 
-            SignalModel.CombinationSignal state ->
-                main False state
+            SignalModel.CombinationSignal states ->
+                main False states.mainSignal
 
             SignalModel.DistantSignal state ->
                 Lamp.Absent
@@ -156,7 +150,7 @@ zs7Lights model =
     let
         main state =
             if state.hasZs7 then
-                if state.mainState == StopAndZs7 then
+                if state.aspect == StopAndZs7 then
                     Lamp.On
                 else
                     Lamp.Off
@@ -167,8 +161,8 @@ zs7Lights model =
             SignalModel.MainSignal state ->
                 main state
 
-            SignalModel.CombinationSignal state ->
-                main state
+            SignalModel.CombinationSignal states ->
+                main states.mainSignal
 
             SignalModel.DistantSignal state ->
                 Lamp.Absent
@@ -179,9 +173,9 @@ bottomWhiteLight model =
     let
         main isCombinationSignal state =
             if state.hasRa12 || (isCombinationSignal && state.hasZs1) then
-                if state.mainState == StopAndRa12 then
+                if state.aspect == StopAndRa12 then
                     Lamp.On
-                else if state.mainState == StopAndZs1 && isCombinationSignal then
+                else if state.aspect == StopAndZs1 && isCombinationSignal then
                     Lamp.Blinking
                 else
                     Lamp.Off
@@ -192,19 +186,19 @@ bottomWhiteLight model =
             SignalModel.MainSignal state ->
                 main False state
 
-            SignalModel.CombinationSignal state ->
-                main True state
+            SignalModel.CombinationSignal states ->
+                main True states.mainSignal
 
             SignalModel.DistantSignal state ->
-                case state.repeater of
-                    False ->
-                        Lamp.Absent
-
-                    True ->
-                        if SignalModel.isExpectStop state || Zs3.hasSpeedLimit state.zs3v then
+                case state.extraLight of
+                    SignalModel.Repeater ->
+                        if SignalModel.isStopState state || SignalModel.isSpeedLimitState state then
                             Lamp.On
                         else
                             Lamp.Off
+
+                    _ ->
+                        Lamp.Absent
 
 
 view : Model -> List (Svg msg)
