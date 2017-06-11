@@ -1,5 +1,7 @@
 ## Signals!
 
+[![Build Status](https://travis-ci.org/iGEL/signals.svg?branch=master)](https://travis-ci.org/iGEL/signals)
+
 This is a toy project to learn [Elm](http://elm-lang.org/). It renders some
 German railway signals as SVG, because I wanted to learn them as well.
 
