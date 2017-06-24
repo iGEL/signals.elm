@@ -14,7 +14,7 @@ type alias StateModel =
     { aspect : Messages.Msg
     , speedLimit : Maybe Int
     , extraLight : ExtraLight
-    , hasProceedSlowly : Bool
+    , slowSpeedLights : List Int
     , hasRa12 : Bool
     , hasZs1 : Bool
     , hasZs7 : Bool
@@ -38,7 +38,7 @@ defaultStateModel =
     { aspect = Stop
     , speedLimit = Nothing
     , extraLight = Absent
-    , hasProceedSlowly = False
+    , slowSpeedLights = []
     , hasRa12 = False
     , hasZs1 = False
     , hasZs7 = False
@@ -299,7 +299,7 @@ availableSpeedLimits signalType model =
                 let
                     fromHvState state =
                         if state.zs3 == Zs3.Absent then
-                            if state.hasProceedSlowly || state.hasRa12 then
+                            if List.member 4 state.slowSpeedLights || state.hasRa12 then
                                 [ Just 4, Nothing ]
                             else
                                 [ Nothing ]

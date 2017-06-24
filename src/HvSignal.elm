@@ -134,7 +134,7 @@ vrWhiteLight state repeater forcedOff =
 
 vrBottomOrangeLight : SignalModel.StateModel -> Bool -> Bool -> Lamp.State
 vrBottomOrangeLight state reducedSpeed forcedOff =
-    if (not forcedOff) && (SignalModel.isStopState state || ((state.hasProceedSlowly || state.hasRa12) && reducedSpeed)) then
+    if (not forcedOff) && (SignalModel.isStopState state || ((List.member 4 state.slowSpeedLights || state.hasRa12) && reducedSpeed)) then
         Lamp.On
     else
         Lamp.Off
@@ -142,7 +142,7 @@ vrBottomOrangeLight state reducedSpeed forcedOff =
 
 vrBottomGreenLight : SignalModel.StateModel -> Bool -> Bool -> Lamp.State
 vrBottomGreenLight state reducedSpeed forcedOff =
-    if not forcedOff && SignalModel.isProceedState state && not ((state.hasProceedSlowly || state.hasRa12) && reducedSpeed) then
+    if not forcedOff && SignalModel.isProceedState state && not ((List.member 4 state.slowSpeedLights || state.hasRa12) && reducedSpeed) then
         Lamp.On
     else
         Lamp.Off
@@ -158,7 +158,7 @@ hpGreenLight state =
 
 hpOrangeLight : SignalModel.StateModel -> Bool -> Lamp.State
 hpOrangeLight state reducedSpeed =
-    if state.hasProceedSlowly || state.hasRa12 then
+    if List.member 4 state.slowSpeedLights || state.hasRa12 then
         if SignalModel.isProceedState state && reducedSpeed then
             Lamp.On
         else

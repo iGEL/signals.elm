@@ -53,7 +53,7 @@ all =
                         Expect.equal
                             (SignalModel.distantSignal
                                 |> Signal.update (ToDistantSignal Proceed)
-                                |> Signal.update (ToDistantSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> HvSignal.lights
                             )
@@ -72,7 +72,7 @@ all =
                         Expect.equal
                             (SignalModel.distantSignal
                                 |> Signal.update (ToDistantSignal Proceed)
-                                |> Signal.update (ToDistantSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 7)))
                                 |> HvSignal.lights
@@ -92,7 +92,7 @@ all =
                         Expect.equal
                             (SignalModel.distantSignal
                                 |> Signal.update (ToDistantSignal Proceed)
-                                |> Signal.update (ToDistantSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
                                 |> HvSignal.lights
@@ -209,7 +209,7 @@ all =
                                 |> Signal.update (ToDistantSignal Proceed)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
-                                |> Signal.update (ToDistantSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> HvSignal.lights
                             )
                             { hp = Nothing
@@ -377,7 +377,7 @@ all =
                             (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Proceed)
                                 |> Signal.update (ToDistantSignal Proceed)
-                                |> Signal.update (ToDistantSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> HvSignal.lights
                             )
@@ -406,7 +406,7 @@ all =
                             (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Proceed)
                                 |> Signal.update (ToDistantSignal Proceed)
-                                |> Signal.update (ToDistantSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 7)))
                                 |> HvSignal.lights
@@ -436,7 +436,7 @@ all =
                             (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Proceed)
                                 |> Signal.update (ToDistantSignal Proceed)
-                                |> Signal.update (ToDistantSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
                                 |> HvSignal.lights
@@ -524,7 +524,7 @@ all =
                         Expect.equal
                             (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToMainSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 7)))
                                 |> HvSignal.lights
@@ -553,7 +553,7 @@ all =
                         Expect.equal
                             (SignalModel.combinationSignal
                                 |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToMainSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 6)))
                                 |> HvSignal.lights
@@ -935,7 +935,7 @@ all =
                         Expect.equal
                             (SignalModel.mainSignal
                                 |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToMainSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> HvSignal.lights
                             )
@@ -956,7 +956,7 @@ all =
                         Expect.equal
                             (SignalModel.mainSignal
                                 |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToMainSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 7)))
                                 |> HvSignal.lights
@@ -978,7 +978,7 @@ all =
                         Expect.equal
                             (SignalModel.mainSignal
                                 |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToMainSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 6)))
                                 |> HvSignal.lights

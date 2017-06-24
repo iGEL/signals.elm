@@ -54,8 +54,14 @@ updateSignal msg state =
                             SignalModel.Repeater
             }
 
-        ToggleHasProceedSlowly ->
-            { state | hasProceedSlowly = not state.hasProceedSlowly }
+        ToggleSlowSpeedLight speed ->
+            { state
+                | slowSpeedLights =
+                    if List.member speed state.slowSpeedLights then
+                        List.filter (\s -> s /= speed) state.slowSpeedLights
+                    else
+                        speed :: state.slowSpeedLights
+            }
 
         ToggleHasRa12 ->
             { state | hasRa12 = not state.hasRa12 }

@@ -80,7 +80,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.mainSignal
-                                |> Signal.update (ToMainSignal ToggleHasProceedSlowly)
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> SignalModel.availableSpeedLimits SignalModel.HvLight
                             )
                             [ Just 4, Nothing ]

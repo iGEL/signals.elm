@@ -202,7 +202,7 @@ mainSignalOptions targetSignal signal model =
                 ]
             , if model.signalType == SignalModel.HvLight then
                 label []
-                    [ input [ type_ "checkbox", onClick (targetSignal ToggleHasProceedSlowly) ] []
+                    [ input [ type_ "checkbox", onClick (targetSignal (ToggleSlowSpeedLight 4)) ] []
                     , translate model "Langsamfahrt" "Proceed slowly"
                     ]
               else
