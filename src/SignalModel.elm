@@ -11,7 +11,7 @@ type ExtraLight
 
 
 type alias StateModel =
-    { aspect : Messages.Msg
+    { aspect : Messages.Aspect
     , speedLimit : Maybe Int
     , extraLight : ExtraLight
     , slowSpeedLights : List Int
@@ -92,14 +92,9 @@ zs3v model =
             state.zs3
 
 
-isStopMsg : Msg -> Bool
-isStopMsg msg =
-    (List.member msg [ Stop, StopAndRa12, StopAndZs1, StopAndZs7 ])
-
-
 isStopState : StateModel -> Bool
 isStopState state =
-    isStopMsg state.aspect
+    (List.member state.aspect [ Stop, StopAndRa12, StopAndZs1, StopAndZs7 ])
 
 
 isStop : Model -> Bool

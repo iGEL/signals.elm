@@ -18,7 +18,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Stop)
+                                |> Signal.update (ToDistantSignal (SetAspect Stop))
                                 |> HvSignal.lights
                             )
                             { hp = Nothing
@@ -35,7 +35,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> HvSignal.lights
                             )
                             { hp = Nothing
@@ -52,7 +52,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> HvSignal.lights
@@ -71,7 +71,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 7)))
@@ -91,7 +91,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
@@ -111,7 +111,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal ToggleHasRa12)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
@@ -131,7 +131,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
                                 |> HvSignal.lights
@@ -151,7 +151,7 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.distantSignal
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> HvSignal.lights
                                 )
@@ -172,7 +172,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.signalRepeater
-                                |> Signal.update (ToDistantSignal Stop)
+                                |> Signal.update (ToDistantSignal (SetAspect Stop))
                                 |> HvSignal.lights
                             )
                             { hp = Nothing
@@ -189,7 +189,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.signalRepeater
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> HvSignal.lights
                             )
                             { hp = Nothing
@@ -206,7 +206,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.signalRepeater
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
                                 |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
@@ -226,7 +226,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.signalRepeater
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal ToggleHasRa12)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
@@ -246,7 +246,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.signalRepeater
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
                                 |> HvSignal.lights
@@ -267,8 +267,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Stop)
-                                |> Signal.update (ToDistantSignal Stop)
+                                |> Signal.update (ToMainSignal (SetAspect Stop))
+                                |> Signal.update (ToDistantSignal (SetAspect Stop))
                                 |> HvSignal.lights
                             )
                             { hp =
@@ -294,8 +294,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Stop)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Stop))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> HvSignal.lights
                             )
                             { hp =
@@ -321,8 +321,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Stop)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Stop))
                                 |> HvSignal.lights
                             )
                             { hp =
@@ -348,8 +348,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> HvSignal.lights
                             )
                             { hp =
@@ -375,8 +375,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> HvSignal.lights
@@ -404,8 +404,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 7)))
@@ -434,8 +434,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
@@ -464,8 +464,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal ToggleHasRa12)
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
@@ -494,8 +494,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 6)))
                                 |> HvSignal.lights
@@ -523,7 +523,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 7)))
@@ -552,7 +552,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 6)))
@@ -581,7 +581,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 6)))
                                 |> HvSignal.lights
@@ -609,7 +609,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> Signal.update (ToMainSignal ToggleHasRa12)
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 6)))
@@ -640,7 +640,7 @@ all =
                             Expect.equal
                                 (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -667,7 +667,7 @@ all =
                             Expect.equal
                                 (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
-                                    |> Signal.update (ToMainSignal StopAndRa12)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndRa12))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -695,8 +695,8 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.combinationSignal
-                                    |> Signal.update (ToMainSignal Stop)
-                                    |> Signal.update (ToDistantSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
+                                    |> Signal.update (ToDistantSignal (SetAspect Stop))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> HvSignal.lights
                                 )
@@ -723,8 +723,8 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.combinationSignal
-                                    |> Signal.update (ToMainSignal Proceed)
-                                    |> Signal.update (ToDistantSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                    |> Signal.update (ToDistantSignal (SetAspect Stop))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> HvSignal.lights
                                 )
@@ -751,8 +751,8 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.combinationSignal
-                                    |> Signal.update (ToMainSignal Proceed)
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> HvSignal.lights
                                 )
@@ -782,7 +782,7 @@ all =
                             Expect.equal
                                 (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -808,9 +808,9 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.combinationSignal
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
-                                    |> Signal.update (ToMainSignal StopAndZs1)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndZs1))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -838,9 +838,9 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.combinationSignal
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -867,7 +867,7 @@ all =
                             Expect.equal
                                 (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
-                                    |> Signal.update (ToMainSignal StopAndZs7)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndZs7))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -896,7 +896,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.mainSignal
-                                |> Signal.update (ToMainSignal Stop)
+                                |> Signal.update (ToMainSignal (SetAspect Stop))
                                 |> HvSignal.lights
                             )
                             { hp =
@@ -915,7 +915,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.mainSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> HvSignal.lights
                             )
                             { hp =
@@ -934,7 +934,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.mainSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> HvSignal.lights
@@ -955,7 +955,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.mainSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 7)))
@@ -977,7 +977,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.mainSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 6)))
@@ -999,7 +999,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.mainSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 6)))
                                 |> HvSignal.lights
@@ -1020,7 +1020,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.mainSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> Signal.update (ToMainSignal ToggleHasRa12)
                                 |> Signal.update (ToMainSignal SetZs3Dynamic)
                                 |> Signal.update (ToMainSignal (SetSpeedLimit (Just 6)))
@@ -1044,7 +1044,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -1064,7 +1064,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
-                                    |> Signal.update (ToMainSignal StopAndRa12)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndRa12))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -1086,7 +1086,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -1106,7 +1106,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
-                                    |> Signal.update (ToMainSignal StopAndZs1)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndZs1))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -1128,7 +1128,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> HvSignal.lights
                                 )
                                 { hp =
@@ -1148,7 +1148,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
-                                    |> Signal.update (ToMainSignal StopAndZs7)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndZs7))
                                     |> HvSignal.lights
                                 )
                                 { hp =

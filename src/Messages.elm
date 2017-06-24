@@ -5,22 +5,25 @@ type alias SpeedLimit =
     Int
 
 
-type Msg
+type Aspect
     = Stop
     | Proceed
     | StopAndZs1
     | StopAndZs7
     | StopAndRa12
-    | ResetZs1
-    | ToggleHasZs1
+
+
+type Msg
+    = SetAspect Aspect
+    | SetSpeedLimit (Maybe SpeedLimit)
     | SetZs3Absent
     | SetZs3Dynamic
     | SetZs3Fixed
-    | SetSpeedLimit (Maybe SpeedLimit)
-    | ToggleSlowSpeedLight Int
-    | ToggleHasZs7
     | ToggleHasRa12
+    | ToggleHasZs1
+    | ToggleHasZs7
     | ToggleShortBrakePath
+    | ToggleSlowSpeedLight Int
 
 
 type DisplayMsg

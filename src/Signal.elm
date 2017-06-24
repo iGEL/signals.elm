@@ -40,6 +40,30 @@ update target model =
 updateSignal : Msg -> SignalModel.StateModel -> SignalModel.StateModel
 updateSignal msg state =
     case msg of
+        SetAspect aspect ->
+            { state | aspect = aspect }
+
+        SetSpeedLimit maybeSpeedLimit ->
+            { state | speedLimit = maybeSpeedLimit }
+
+        SetZs3Absent ->
+            { state | zs3 = Zs3.Absent }
+
+        SetZs3Dynamic ->
+            { state | zs3 = Zs3.Dynamic }
+
+        SetZs3Fixed ->
+            { state | zs3 = Zs3.Fixed }
+
+        ToggleHasRa12 ->
+            { state | hasRa12 = not state.hasRa12 }
+
+        ToggleHasZs1 ->
+            { state | hasZs1 = not state.hasZs1 }
+
+        ToggleHasZs7 ->
+            { state | hasZs7 = not state.hasZs7 }
+
         ToggleShortBrakePath ->
             { state
                 | extraLight =
@@ -62,30 +86,6 @@ updateSignal msg state =
                     else
                         speed :: state.slowSpeedLights
             }
-
-        ToggleHasRa12 ->
-            { state | hasRa12 = not state.hasRa12 }
-
-        ToggleHasZs1 ->
-            { state | hasZs1 = not state.hasZs1 }
-
-        ToggleHasZs7 ->
-            { state | hasZs7 = not state.hasZs7 }
-
-        SetZs3Absent ->
-            { state | zs3 = Zs3.Absent }
-
-        SetZs3Dynamic ->
-            { state | zs3 = Zs3.Dynamic }
-
-        SetZs3Fixed ->
-            { state | zs3 = Zs3.Fixed }
-
-        SetSpeedLimit maybeSpeedLimit ->
-            { state | speedLimit = maybeSpeedLimit }
-
-        _ ->
-            { state | aspect = msg }
 
 
 view : Model -> SignalType -> Svg msg

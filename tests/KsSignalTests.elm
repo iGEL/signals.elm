@@ -18,7 +18,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Stop)
+                                |> Signal.update (ToDistantSignal (SetAspect Stop))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -33,7 +33,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -49,7 +49,7 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.distantSignal
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 4)))
                                     |> KsSignal.lights
                                 )
@@ -66,7 +66,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> KsSignal.lights
                             )
@@ -82,7 +82,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.distantSignal
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 5)))
                                 |> KsSignal.lights
@@ -100,7 +100,7 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.distantSignal
-                                    |> Signal.update (ToDistantSignal Stop)
+                                    |> Signal.update (ToDistantSignal (SetAspect Stop))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> KsSignal.lights
                                 )
@@ -116,7 +116,7 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.distantSignal
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> KsSignal.lights
                                 )
@@ -132,7 +132,7 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.distantSignal
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                     |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 5)))
@@ -153,7 +153,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.signalRepeater
-                                |> Signal.update (ToDistantSignal Stop)
+                                |> Signal.update (ToDistantSignal (SetAspect Stop))
                                 |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                 |> KsSignal.lights
                             )
@@ -169,7 +169,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.signalRepeater
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -185,7 +185,7 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.signalRepeater
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 4)))
                                     |> KsSignal.lights
                                 )
@@ -202,7 +202,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.signalRepeater
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> KsSignal.lights
                             )
@@ -218,7 +218,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.signalRepeater
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 5)))
                                 |> KsSignal.lights
@@ -237,8 +237,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Stop)
-                                |> Signal.update (ToDistantSignal Stop)
+                                |> Signal.update (ToMainSignal (SetAspect Stop))
+                                |> Signal.update (ToDistantSignal (SetAspect Stop))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -253,8 +253,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Stop)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Stop))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -269,8 +269,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Stop)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Stop))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -285,8 +285,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -301,8 +301,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> KsSignal.lights
                             )
@@ -319,8 +319,8 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.combinationSignal
-                                    |> Signal.update (ToMainSignal Proceed)
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 4)))
                                     |> KsSignal.lights
                                 )
@@ -337,8 +337,8 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.combinationSignal
-                                |> Signal.update (ToMainSignal Proceed)
-                                |> Signal.update (ToDistantSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                 |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                 |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 5)))
                                 |> KsSignal.lights
@@ -357,7 +357,7 @@ all =
                             Expect.equal
                                 (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -373,7 +373,7 @@ all =
                             Expect.equal
                                 (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
-                                    |> Signal.update (ToMainSignal StopAndRa12)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndRa12))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -390,8 +390,8 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.combinationSignal
-                                    |> Signal.update (ToMainSignal Stop)
-                                    |> Signal.update (ToDistantSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
+                                    |> Signal.update (ToDistantSignal (SetAspect Stop))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> KsSignal.lights
                                 )
@@ -407,8 +407,8 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.combinationSignal
-                                    |> Signal.update (ToMainSignal Proceed)
-                                    |> Signal.update (ToDistantSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                    |> Signal.update (ToDistantSignal (SetAspect Stop))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> KsSignal.lights
                                 )
@@ -424,8 +424,8 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.combinationSignal
-                                    |> Signal.update (ToMainSignal Proceed)
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> KsSignal.lights
                                 )
@@ -441,8 +441,8 @@ all =
                         \() ->
                             Expect.equal
                                 (SignalModel.combinationSignal
-                                    |> Signal.update (ToMainSignal Proceed)
-                                    |> Signal.update (ToDistantSignal Proceed)
+                                    |> Signal.update (ToMainSignal (SetAspect Proceed))
+                                    |> Signal.update (ToDistantSignal (SetAspect Proceed))
                                     |> Signal.update (ToDistantSignal ToggleShortBrakePath)
                                     |> Signal.update (ToDistantSignal SetZs3Dynamic)
                                     |> Signal.update (ToDistantSignal (SetSpeedLimit (Just 5)))
@@ -463,7 +463,7 @@ all =
                             Expect.equal
                                 (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -479,7 +479,7 @@ all =
                             Expect.equal
                                 (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
-                                    |> Signal.update (ToMainSignal StopAndZs1)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndZs1))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -497,7 +497,7 @@ all =
                             Expect.equal
                                 (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -513,7 +513,7 @@ all =
                             Expect.equal
                                 (SignalModel.combinationSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
-                                    |> Signal.update (ToMainSignal StopAndZs7)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndZs7))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -531,7 +531,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.mainSignal
-                                |> Signal.update (ToMainSignal Stop)
+                                |> Signal.update (ToMainSignal (SetAspect Stop))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -546,7 +546,7 @@ all =
                     \() ->
                         Expect.equal
                             (SignalModel.mainSignal
-                                |> Signal.update (ToMainSignal Proceed)
+                                |> Signal.update (ToMainSignal (SetAspect Proceed))
                                 |> KsSignal.lights
                             )
                             { topWhiteLight = Lamp.Absent
@@ -563,7 +563,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -579,7 +579,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasRa12)
-                                    |> Signal.update (ToMainSignal StopAndRa12)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndRa12))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -597,7 +597,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -613,7 +613,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs1)
-                                    |> Signal.update (ToMainSignal StopAndZs1)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndZs1))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -631,7 +631,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
-                                    |> Signal.update (ToMainSignal Stop)
+                                    |> Signal.update (ToMainSignal (SetAspect Stop))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent
@@ -647,7 +647,7 @@ all =
                             Expect.equal
                                 (SignalModel.mainSignal
                                     |> Signal.update (ToMainSignal ToggleHasZs7)
-                                    |> Signal.update (ToMainSignal StopAndZs7)
+                                    |> Signal.update (ToMainSignal (SetAspect StopAndZs7))
                                     |> KsSignal.lights
                                 )
                                 { topWhiteLight = Lamp.Absent

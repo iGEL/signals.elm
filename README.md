@@ -59,11 +59,11 @@ signals =
     { signals
         | combinationSignal =
             Signal.update
-                (ToDistantSignal Proceed)
+                (ToDistantSignal (SetAspect Proceed))
                 signals.combinationSignal
         , mainSignal =
             Signal.update
-                (ToMainSignal Proceed)
+                (ToMainSignal (SetSpeedLimit (Just 4)))
                 signals.mainSignal
     }
 ```

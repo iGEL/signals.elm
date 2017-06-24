@@ -168,9 +168,9 @@ distantSignalOptions targetSignal signal model =
 mainSignalOptions : (Messages.Msg -> msg) -> SignalModel.Model -> Model -> Html.Html msg
 mainSignalOptions targetSignal signal model =
     div []
-        [ button [ onClick (targetSignal Stop) ]
+        [ button [ onClick (targetSignal (SetAspect Stop)) ]
             [ translate model "Halt" "Stop" ]
-        , button [ onClick (targetSignal Proceed) ]
+        , button [ onClick (targetSignal (SetAspect Proceed)) ]
             [ translate model "Fahrt" "Proceed" ]
         , div []
             [ label []
@@ -213,21 +213,21 @@ mainSignalOptions targetSignal signal model =
             { toggleActive = SignalModel.hasRa12 signal
             , toggleMsg = targetSignal ToggleHasRa12
             , toggleLabel = translate model "Rangierfahrt erlaubt Sh 1/Ra 12" "Shunting permitted Sh 1/Ra 12"
-            , actionMsg = targetSignal StopAndRa12
+            , actionMsg = targetSignal (SetAspect StopAndRa12)
             , actionLabel = translate model "Aktiv" "Active"
             }
         , optionWithButton
             { toggleActive = SignalModel.hasZs1 signal
             , toggleMsg = targetSignal ToggleHasZs1
             , toggleLabel = translate model "Ersatzsignal Zs1" "Subsidiary signal Zs1"
-            , actionMsg = targetSignal StopAndZs1
+            , actionMsg = targetSignal (SetAspect StopAndZs1)
             , actionLabel = translate model "Aktiv" "Active"
             }
         , optionWithButton
             { toggleActive = SignalModel.hasZs7 signal
             , toggleMsg = targetSignal ToggleHasZs7
             , toggleLabel = translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
-            , actionMsg = targetSignal StopAndZs7
+            , actionMsg = targetSignal (SetAspect StopAndZs7)
             , actionLabel = translate model "Aktiv" "Active"
             }
         ]
