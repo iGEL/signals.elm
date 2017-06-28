@@ -2,6 +2,7 @@ module Signal exposing (..)
 
 import KsSignal
 import HvSignal
+import HlSignal
 import Messages exposing (..)
 import SignalModel exposing (..)
 import Svg exposing (..)
@@ -138,6 +139,7 @@ view model signalType =
 
                     }
                     circle.blinking { animation: blinking 2s ease infinite }
+                    .hlSignal circle.blinking { animation: blinking 1s ease infinite }
                     """
                 ]
             , defs []
@@ -177,5 +179,8 @@ view model signalType =
                             (model |> HvSignal.lights |> HvSignal.view)
                         , g [ transform "translate(19, 350)" ] [ zs3v ]
                         ]
+
+                    Hl ->
+                        (model |> HlSignal.lights |> HlSignal.view)
                 )
             ]

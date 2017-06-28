@@ -109,5 +109,47 @@ all =
                             )
                             [ Just 1, Just 2, Just 3, Just 4, Just 5, Just 6, Just 7, Just 8, Just 9, Just 10, Just 11, Just 12, Just 13, Just 14, Just 15 ]
                 ]
+            , describe "HlSignal"
+                [ test "without stripes" <|
+                    \() ->
+                        Expect.equal
+                            (SignalModel.mainSignal
+                                |> SignalModel.availableSpeedLimits SignalModel.Hl
+                            )
+                            [ Just 4, Nothing ]
+                , test "with orange stripe" <|
+                    \() ->
+                        Expect.equal
+                            (SignalModel.mainSignal
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 6))
+                                |> SignalModel.availableSpeedLimits SignalModel.Hl
+                            )
+                            [ Just 4, Just 6, Nothing ]
+                , test "with green stripe" <|
+                    \() ->
+                        Expect.equal
+                            (SignalModel.mainSignal
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 10))
+                                |> SignalModel.availableSpeedLimits SignalModel.Hl
+                            )
+                            [ Just 4, Just 10, Nothing ]
+                , test "with both stripes" <|
+                    \() ->
+                        Expect.equal
+                            (SignalModel.mainSignal
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 6))
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 10))
+                                |> SignalModel.availableSpeedLimits SignalModel.Hl
+                            )
+                            [ Just 4, Just 6, Just 10, Nothing ]
+                , test "with an unrepresentable speed allowed" <|
+                    \() ->
+                        Expect.equal
+                            (SignalModel.mainSignal
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 2))
+                                |> SignalModel.availableSpeedLimits SignalModel.Hl
+                            )
+                            [ Just 4, Nothing ]
+                ]
             ]
         ]

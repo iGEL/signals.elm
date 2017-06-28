@@ -115,7 +115,7 @@ view model =
                     , onClick (SetSignalType SignalModel.Ks)
                     ]
                     []
-                , text "KS"
+                , text "Ks"
                 ]
             , label []
                 [ input
@@ -125,6 +125,15 @@ view model =
                     ]
                     []
                 , translate model "H/V Lichtsignal" "H/V light signal"
+                ]
+            , label []
+                [ input
+                    [ type_ "radio"
+                    , checked (model.signalType == SignalModel.Hl)
+                    , onClick (SetSignalType SignalModel.Hl)
+                    ]
+                    []
+                , text "Hl"
                 ]
             ]
         , table [ style [ ( "margin", "20px" ) ] ]
@@ -173,40 +182,69 @@ mainSignalOptions targetSignal signal model =
         , button [ onClick (targetSignal (SetAspect Proceed)) ]
             [ translate model "Fahrt" "Proceed" ]
         , div []
-            [ label []
-                [ input
-                    [ type_ "radio"
-                    , checked (Zs3.isAbsent (SignalModel.zs3 signal))
-                    , onClick (targetSignal SetZs3Absent)
-                    ]
-                    []
-                , translate model "Kein Zs3" "No Zs3"
-                ]
-            , label []
-                [ input
-                    [ type_ "radio"
-                    , checked (Zs3.isDynamic (SignalModel.zs3 signal))
-                    , onClick (targetSignal SetZs3Dynamic)
-                    ]
-                    []
-                , translate model "Dynamisches Zs3" "Dynamic Zs3"
-                ]
-            , label []
-                [ input
-                    [ type_ "radio"
-                    , checked (Zs3.isFixed (SignalModel.zs3 signal))
-                    , onClick (targetSignal SetZs3Fixed)
-                    ]
-                    []
-                , translate model "Zs3-Schild" "Zs3 sign"
-                ]
-            , if model.signalType == SignalModel.HvLight then
-                label []
-                    [ input [ type_ "checkbox", onClick (targetSignal (ToggleSlowSpeedLight 4)) ] []
-                    , translate model "Langsamfahrt" "Proceed slowly"
+            [ if model.signalType == SignalModel.Hl then
+                span []
+                    [ label []
+                        [ input
+                            [ type_ "checkbox"
+                            , checked (List.member 6 (SignalModel.slowSpeedLights signal))
+                            , onClick (targetSignal (ToggleSlowSpeedLight 6))
+                            ]
+                            []
+                        , translate model "Oranger Streifen (60 km/h)" "Orange stripe (60 km/h)"
+                        ]
+                    , label []
+                        [ input
+                            [ type_ "checkbox"
+                            , checked (List.member 10 (SignalModel.slowSpeedLights signal))
+                            , onClick (targetSignal (ToggleSlowSpeedLight 10))
+                            ]
+                            []
+                        , translate model "Grüner Streifen (100 km/h)" "Green stripe (100 km/h)"
+                        ]
                     ]
               else
-                span [] []
+                span []
+                    [ label []
+                        [ input
+                            [ type_ "radio"
+                            , checked (Zs3.isAbsent (SignalModel.zs3 signal))
+                            , onClick (targetSignal SetZs3Absent)
+                            ]
+                            []
+                        , translate model "Kein Zs3" "No Zs3"
+                        ]
+                    , label []
+                        [ input
+                            [ type_ "radio"
+                            , checked (Zs3.isDynamic (SignalModel.zs3 signal))
+                            , onClick (targetSignal SetZs3Dynamic)
+                            ]
+                            []
+                        , translate model "Dynamisches Zs3" "Dynamic Zs3"
+                        ]
+                    , label []
+                        [ input
+                            [ type_ "radio"
+                            , checked (Zs3.isFixed (SignalModel.zs3 signal))
+                            , onClick (targetSignal SetZs3Fixed)
+                            ]
+                            []
+                        , translate model "Zs3-Schild" "Zs3 sign"
+                        ]
+                    , if model.signalType == SignalModel.HvLight then
+                        label []
+                            [ input
+                                [ type_ "checkbox"
+                                , checked (List.member 4 (SignalModel.slowSpeedLights signal))
+                                , onClick (targetSignal (ToggleSlowSpeedLight 4))
+                                ]
+                                []
+                            , translate model "Langsamfahrt" "Proceed slowly"
+                            ]
+                      else
+                        span [] []
+                    ]
             , speedDropdown targetSignal (SignalModel.availableSpeedLimits model.signalType signal) (SignalModel.mainSignalSpeedLimit signal)
             ]
         , optionWithButton
@@ -223,13 +261,16 @@ mainSignalOptions targetSignal signal model =
             , actionMsg = targetSignal (SetAspect StopAndZs1)
             , actionLabel = translate model "Aktiv" "Active"
             }
-        , optionWithButton
-            { toggleActive = SignalModel.hasZs7 signal
-            , toggleMsg = targetSignal ToggleHasZs7
-            , toggleLabel = translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
-            , actionMsg = targetSignal (SetAspect StopAndZs7)
-            , actionLabel = translate model "Aktiv" "Active"
-            }
+        , if model.signalType == SignalModel.Hl then
+            span [] []
+          else
+            optionWithButton
+                { toggleActive = SignalModel.hasZs7 signal
+                , toggleMsg = targetSignal ToggleHasZs7
+                , toggleLabel = translate model "Vorsichtsignal Zs7" "Caution signal Zs7"
+                , actionMsg = targetSignal (SetAspect StopAndZs7)
+                , actionLabel = translate model "Aktiv" "Active"
+                }
         ]
 
 

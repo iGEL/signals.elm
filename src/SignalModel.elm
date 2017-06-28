@@ -31,6 +31,7 @@ type Model
 type SignalType
     = Ks
     | HvLight
+    | Hl
 
 
 defaultStateModel : StateModel
@@ -90,6 +91,19 @@ zs3v model =
 
         DistantSignal state ->
             state.zs3
+
+
+slowSpeedLights : Model -> List Int
+slowSpeedLights model =
+    case model of
+        DistantSignal _ ->
+            []
+
+        CombinationSignal states ->
+            states.mainSignal.slowSpeedLights
+
+        MainSignal state ->
+            state.slowSpeedLights
 
 
 isStopState : StateModel -> Bool
@@ -310,3 +324,26 @@ availableSpeedLimits signalType model =
 
                         MainSignal state ->
                             fromHvState state
+
+            Hl ->
+                let
+                    switchableSpeeds state =
+                        List.filter (\element -> List.member element (List.map Just state.slowSpeedLights))
+                            [ Just 6, Just 10 ]
+
+                    fromState state =
+                        List.concat
+                            [ [ Just 4 ]
+                            , switchableSpeeds state
+                            , [ Nothing ]
+                            ]
+                in
+                    case model of
+                        DistantSignal _ ->
+                            []
+
+                        CombinationSignal states ->
+                            fromState states.mainSignal
+
+                        MainSignal state ->
+                            fromState state
