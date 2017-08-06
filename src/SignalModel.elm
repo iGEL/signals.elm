@@ -31,6 +31,7 @@ type Model
 type SignalType
     = Ks
     | HvLight
+    | HvSemaphore
     | Hl
 
 
@@ -291,6 +292,27 @@ availableSpeedLimits signalType model =
 
                 Zs3.Dynamic ->
                     List.append zs3Speeds [ Nothing ]
+
+        hvVariants model isLightSignal =
+            let
+                fromHvState state =
+                    if state.zs3 == Zs3.Absent then
+                        if List.member 4 state.slowSpeedLights || (isLightSignal && state.hasRa12) then
+                            [ Just 4, Nothing ]
+                        else
+                            [ Nothing ]
+                    else
+                        fromZs3 state.zs3
+            in
+                case model of
+                    DistantSignal _ ->
+                        []
+
+                    CombinationSignal states ->
+                        fromHvState states.mainSignal
+
+                    MainSignal state ->
+                        fromHvState state
     in
         case signalType of
             Ks ->
@@ -305,25 +327,10 @@ availableSpeedLimits signalType model =
                         fromZs3 state.zs3
 
             HvLight ->
-                let
-                    fromHvState state =
-                        if state.zs3 == Zs3.Absent then
-                            if List.member 4 state.slowSpeedLights || state.hasRa12 then
-                                [ Just 4, Nothing ]
-                            else
-                                [ Nothing ]
-                        else
-                            fromZs3 state.zs3
-                in
-                    case model of
-                        DistantSignal _ ->
-                            []
+                hvVariants model True
 
-                        CombinationSignal states ->
-                            fromHvState states.mainSignal
-
-                        MainSignal state ->
-                            fromHvState state
+            HvSemaphore ->
+                hvVariants model False
 
             Hl ->
                 let

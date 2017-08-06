@@ -68,7 +68,48 @@ all =
                             )
                             [ Just 1, Just 2, Just 3, Just 4, Just 5, Just 6, Just 7, Just 8, Just 9, Just 10, Just 11, Just 12, Just 13, Just 14, Just 15 ]
                 ]
-            , describe "HvSignal"
+            , describe "HvSemaphore"
+                [ test "without Zs3, proceed slowly or Ra12" <|
+                    \() ->
+                        Expect.equal
+                            (SignalModel.mainSignal
+                                |> SignalModel.availableSpeedLimits SignalModel.HvSemaphore
+                            )
+                            [ Nothing ]
+                , test "with proceed slowly" <|
+                    \() ->
+                        Expect.equal
+                            (SignalModel.mainSignal
+                                |> Signal.update (ToMainSignal (ToggleSlowSpeedLight 4))
+                                |> SignalModel.availableSpeedLimits SignalModel.HvSemaphore
+                            )
+                            [ Just 4, Nothing ]
+                , test "with Ra12" <|
+                    \() ->
+                        Expect.equal
+                            (SignalModel.mainSignal
+                                |> Signal.update (ToMainSignal ToggleHasRa12)
+                                |> SignalModel.availableSpeedLimits SignalModel.HvSemaphore
+                            )
+                            [ Nothing ]
+                , test "with dynamic Zs3" <|
+                    \() ->
+                        Expect.equal
+                            (SignalModel.mainSignal
+                                |> Signal.update (ToMainSignal SetZs3Dynamic)
+                                |> SignalModel.availableSpeedLimits SignalModel.HvSemaphore
+                            )
+                            [ Just 1, Just 2, Just 3, Just 4, Just 5, Just 6, Just 7, Just 8, Just 9, Just 10, Just 11, Just 12, Just 13, Just 14, Just 15, Nothing ]
+                , test "with fixed Zs3" <|
+                    \() ->
+                        Expect.equal
+                            (SignalModel.mainSignal
+                                |> Signal.update (ToMainSignal SetZs3Fixed)
+                                |> SignalModel.availableSpeedLimits SignalModel.HvSemaphore
+                            )
+                            [ Just 1, Just 2, Just 3, Just 4, Just 5, Just 6, Just 7, Just 8, Just 9, Just 10, Just 11, Just 12, Just 13, Just 14, Just 15 ]
+                ]
+            , describe "HvLightSignal"
                 [ test "without Zs3, proceed slowly or Ra12" <|
                     \() ->
                         Expect.equal

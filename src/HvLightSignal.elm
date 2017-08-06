@@ -1,4 +1,4 @@
-module HvSignal exposing (..)
+module HvLightSignal exposing (..)
 
 import Lamp
 import Messages exposing (..)
@@ -36,14 +36,6 @@ type alias VR =
 lights : SignalModel.Model -> Model
 lights model =
     let
-        expectSpeedLimitUpTo60 state =
-            case state.speedLimit of
-                Nothing ->
-                    False
-
-                Just speed ->
-                    speed <= 6
-
         speedLimitUpTo60 state =
             case state.speedLimit of
                 Nothing ->
@@ -60,8 +52,8 @@ lights model =
                         { topOrangeLight = vrTopOrangeLight state False
                         , topGreenLight = vrTopGreenLight state False
                         , whiteLight = vrWhiteLight state (state.extraLight == SignalModel.Repeater) False
-                        , bottomOrangeLight = vrBottomOrangeLight state (expectSpeedLimitUpTo60 state) False
-                        , bottomGreenLight = vrBottomGreenLight state (expectSpeedLimitUpTo60 state) False
+                        , bottomOrangeLight = vrBottomOrangeLight state (speedLimitUpTo60 state) False
+                        , bottomGreenLight = vrBottomGreenLight state (speedLimitUpTo60 state) False
                         }
                 }
 
@@ -99,8 +91,8 @@ lights model =
                             { topOrangeLight = vrTopOrangeLight states.distantSignal forcedOff
                             , topGreenLight = vrTopGreenLight states.distantSignal forcedOff
                             , whiteLight = vrWhiteLight states.distantSignal False forcedOff
-                            , bottomOrangeLight = vrBottomOrangeLight states.distantSignal (expectSpeedLimitUpTo60 states.distantSignal) forcedOff
-                            , bottomGreenLight = vrBottomGreenLight states.distantSignal (expectSpeedLimitUpTo60 states.distantSignal) forcedOff
+                            , bottomOrangeLight = vrBottomOrangeLight states.distantSignal (speedLimitUpTo60 states.distantSignal) forcedOff
+                            , bottomGreenLight = vrBottomGreenLight states.distantSignal (speedLimitUpTo60 states.distantSignal) forcedOff
                             }
                 }
 
@@ -261,18 +253,7 @@ view model =
                                 , Lamp.maybeBigLamp hp.orangeLight "orange" "60" "126"
                                 ]
                             )
-                            (if hp.zs1Lights /= Lamp.Absent || hp.zs7Lights /= Lamp.Absent then
-                                [ Just (rect [ width "35", height "33", x "34", y (yWithOffset 2) ] [])
-                                , Lamp.maybeSmallLamp hp.zs1Lights "white" "51" (yWithOffset 12)
-                                , Lamp.maybeSmallLamp hp.zs1Lights "white" "42" (yWithOffset 26)
-                                , Lamp.maybeSmallLamp hp.zs1Lights "white" "60" (yWithOffset 26)
-                                , Lamp.maybeSmallLamp hp.zs7Lights "orange" "42" (yWithOffset 12)
-                                , Lamp.maybeSmallLamp hp.zs7Lights "orange" "60" (yWithOffset 12)
-                                , Lamp.maybeSmallLamp hp.zs7Lights "orange" "51" (yWithOffset 26)
-                                ]
-                             else
-                                []
-                            )
+                            [ Just (g [ transform ("translate(34, " ++ (yWithOffset 2) ++ ")") ] (zs1AndZs7View hp)) ]
 
                 Nothing ->
                     []
@@ -300,3 +281,24 @@ view model =
     in
         List.filterMap identity
             (List.append mainLights distantLights)
+
+
+zs1AndZs7View : { a | zs1Lights : Lamp.State, zs7Lights : Lamp.State } -> List (Svg msg)
+zs1AndZs7View hp =
+    let
+        identity =
+            \n -> n
+    in
+        List.filterMap identity
+            (if hp.zs1Lights /= Lamp.Absent || hp.zs7Lights /= Lamp.Absent then
+                [ Just (rect [ width "35", height "33", x "0", y "0" ] [])
+                , Lamp.maybeSmallLamp hp.zs1Lights "white" "17" "10"
+                , Lamp.maybeSmallLamp hp.zs1Lights "white" "8" "24"
+                , Lamp.maybeSmallLamp hp.zs1Lights "white" "26" "24"
+                , Lamp.maybeSmallLamp hp.zs7Lights "orange" "8" "10"
+                , Lamp.maybeSmallLamp hp.zs7Lights "orange" "26" "10"
+                , Lamp.maybeSmallLamp hp.zs7Lights "orange" "17" "24"
+                ]
+             else
+                []
+            )

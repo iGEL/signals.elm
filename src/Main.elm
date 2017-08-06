@@ -129,6 +129,15 @@ view model =
             , label []
                 [ input
                     [ type_ "radio"
+                    , checked (model.signalType == SignalModel.HvSemaphore)
+                    , onClick (SetSignalType SignalModel.HvSemaphore)
+                    ]
+                    []
+                , translate model "H/V Formsignal" "H/V semaphore"
+                ]
+            , label []
+                [ input
+                    [ type_ "radio"
                     , checked (model.signalType == SignalModel.Hl)
                     , onClick (SetSignalType SignalModel.Hl)
                     ]
@@ -232,7 +241,7 @@ mainSignalOptions targetSignal signal model =
                             []
                         , translate model "Zs3-Schild" "Zs3 sign"
                         ]
-                    , if model.signalType == SignalModel.HvLight then
+                    , if List.member model.signalType [ SignalModel.HvLight, SignalModel.HvSemaphore ] then
                         label []
                             [ input
                                 [ type_ "checkbox"

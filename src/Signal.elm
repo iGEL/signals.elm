@@ -1,7 +1,8 @@
 module Signal exposing (..)
 
 import KsSignal
-import HvSignal
+import HvLightSignal
+import HvSemaphore
 import HlSignal
 import Messages exposing (..)
 import SignalModel exposing (..)
@@ -114,7 +115,7 @@ view model signalType =
                 _ ->
                     g [] []
     in
-        svg [ version "1.1", viewBox "0 0 110 500", width "150" ]
+        svg [ version "1.1", viewBox "0 0 140 600", width "200", height "600" ]
             [ Svg.style []
                 [ text """
                     circle { stroke-width: 0.4; stroke-opacity: 0.85; stroke: #333; }
@@ -140,6 +141,14 @@ view model signalType =
                     }
                     circle.blinking { animation: blinking 2s ease infinite }
                     .hlSignal circle.blinking { animation: blinking 1s ease infinite }
+                    .ral2000 { stroke: none; fill: rgb(218, 110, 0) }
+                    .ral3002 { stroke: none; fill: rgb(155, 35, 33) }
+                    .ral6011 { stroke: none; fill: rgb(108, 124, 89) }
+                    .ral9002 { stroke: none; fill: rgb(215, 213, 203) }
+                    .ral9005 { stroke: none; fill: rgb(14, 14, 16) }
+                    .ral9007 { stroke: none; fill: rgb(135, 133, 129) }
+                    .screw { stroke: none; fill: #49433d; opacity: 0.768}
+                    .semaphoreAnimate { transition: transform 2s }
                     """
                 ]
             , defs []
@@ -176,8 +185,25 @@ view model signalType =
                     HvLight ->
                         [ g [ transform "translate(19, 0)" ] [ zs3 ]
                         , g [ transform "translate(3, 65)" ]
-                            (model |> HvSignal.lights |> HvSignal.view)
+                            (model |> HvLightSignal.lights |> HvLightSignal.view)
                         , g [ transform "translate(19, 350)" ] [ zs3v ]
+                        ]
+
+                    HvSemaphore ->
+                        [ g [ transform "translate(3,65)" ]
+                            (model |> HvSemaphore.arms |> HvSemaphore.view)
+                        , g [ transform "translate(-22, 345)" ] [ zs3 ]
+                        , g [ transform "translate(100, 400)" ]
+                            (case model of
+                                DistantSignal state ->
+                                    if state.extraLight == Repeater then
+                                        []
+                                    else
+                                        [ zs3v ]
+
+                                _ ->
+                                    [ zs3v ]
+                            )
                         ]
 
                     Hl ->
