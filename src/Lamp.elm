@@ -1,4 +1,4 @@
-module Lamp exposing (..)
+module Lamp exposing (State(..), maybeBigLamp, maybeSmallLamp, tinyLamp)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -17,24 +17,26 @@ lamp color blinking on x y radius =
         onClass =
             if blinking then
                 color ++ " on blinking"
+
             else
                 color ++ " on"
 
         offClass =
             color ++ " off"
     in
-        circle
-            [ cx x
-            , cy y
-            , r radius
-            , class
-                (if on then
-                    onClass
-                 else
-                    offClass
-                )
-            ]
-            []
+    circle
+        [ cx x
+        , cy y
+        , r radius
+        , class
+            (if on then
+                onClass
+
+             else
+                offClass
+            )
+        ]
+        []
 
 
 bigLamp color on x y =

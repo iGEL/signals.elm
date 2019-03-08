@@ -1,4 +1,4 @@
-module Messages exposing (..)
+module Messages exposing (Aspect(..), DisplayMsg(..), Msg(..), Target(..))
 
 
 type alias SpeedLimit =

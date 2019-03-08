@@ -1,4 +1,4 @@
-module Arm exposing (..)
+module Arm exposing (State(..))
 
 
 type State

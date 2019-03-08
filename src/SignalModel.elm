@@ -1,4 +1,4 @@
-module SignalModel exposing (..)
+module SignalModel exposing (ExtraLight(..), Model(..), SignalType(..), StateModel, availableSpeedLimits, combinationSignal, defaultStateModel, distantSignal, hasRa12, hasZs1, hasZs7, isProceed, isProceedState, isSpeedLimitState, isStopState, mainSignal, mainSignalSpeedLimit, shortenedBrakePath, signalRepeater, slowSpeedLights, zs3)
 
 import Messages exposing (..)
 import Zs3
@@ -109,7 +109,7 @@ slowSpeedLights model =
 
 isStopState : StateModel -> Bool
 isStopState state =
-    (List.member state.aspect [ Stop, StopAndRa12, StopAndZs1, StopAndZs7 ])
+    List.member state.aspect [ Stop, StopAndRa12, StopAndZs1, StopAndZs7 ]
 
 
 isStop : Model -> Bool
@@ -282,8 +282,8 @@ availableSpeedLimits signalType model =
             List.range 1 15
                 |> List.map Just
 
-        fromZs3 zs3 =
-            case zs3 of
+        fromZs3 zs3State =
+            case zs3State of
                 Zs3.Absent ->
                     [ Nothing ]
 
@@ -293,64 +293,66 @@ availableSpeedLimits signalType model =
                 Zs3.Dynamic ->
                     List.append zs3Speeds [ Nothing ]
 
-        hvVariants model isLightSignal =
+        hvVariants hvModel isLightSignal =
             let
                 fromHvState state =
                     if state.zs3 == Zs3.Absent then
                         if List.member 4 state.slowSpeedLights || (isLightSignal && state.hasRa12) then
                             [ Just 4, Nothing ]
+
                         else
                             [ Nothing ]
+
                     else
                         fromZs3 state.zs3
             in
-                case model of
-                    DistantSignal _ ->
-                        []
+            case hvModel of
+                DistantSignal _ ->
+                    []
 
-                    CombinationSignal states ->
-                        fromHvState states.mainSignal
+                CombinationSignal states ->
+                    fromHvState states.mainSignal
 
-                    MainSignal state ->
-                        fromHvState state
+                MainSignal state ->
+                    fromHvState state
     in
-        case signalType of
-            Ks ->
-                case model of
-                    DistantSignal _ ->
-                        []
+    case signalType of
+        Ks ->
+            case model of
+                DistantSignal _ ->
+                    []
 
-                    CombinationSignal states ->
-                        fromZs3 states.mainSignal.zs3
+                CombinationSignal states ->
+                    fromZs3 states.mainSignal.zs3
 
-                    MainSignal state ->
-                        fromZs3 state.zs3
+                MainSignal state ->
+                    fromZs3 state.zs3
 
-            HvLight ->
-                hvVariants model True
+        HvLight ->
+            hvVariants model True
 
-            HvSemaphore ->
-                hvVariants model False
+        HvSemaphore ->
+            hvVariants model False
 
-            Hl ->
-                let
-                    switchableSpeeds state =
-                        List.filter (\element -> List.member element (List.map Just state.slowSpeedLights))
-                            [ Just 6, Just 10 ]
+        Hl ->
+            let
+                switchableSpeeds state =
+                    List.filter (\element -> List.member element (List.map Just state.slowSpeedLights))
+                        [ Just 6, Just 10 ]
 
-                    fromState state =
-                        List.concat
-                            [ [ Just 4 ]
-                            , switchableSpeeds state
-                            , [ Nothing ]
-                            ]
-                in
-                    case model of
-                        DistantSignal _ ->
-                            []
+                fromState state =
+                    List.concat
+                        [ [ Just 4 ]
+                        , switchableSpeeds state
+                        , [ Nothing ]
+                        ]
+            in
+            case model of
+                DistantSignal _ ->
+                    []
 
-                        CombinationSignal states ->
-                            fromState states.mainSignal
+                CombinationSignal states ->
+                    fromState states.mainSignal
 
-                        MainSignal state ->
-                            fromState state
+                MainSignal state ->
+                    fromState state

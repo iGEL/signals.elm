@@ -1,9 +1,9 @@
-module Signal exposing (..)
+module Signal exposing (update, view)
 
-import KsSignal
+import HlSignal
 import HvLightSignal
 import HvSemaphore
-import HlSignal
+import KsSignal
 import Messages exposing (..)
 import SignalModel exposing (..)
 import Svg exposing (..)
@@ -85,6 +85,7 @@ updateSignal msg state =
                 | slowSpeedLights =
                     if List.member speed state.slowSpeedLights then
                         List.filter (\s -> s /= speed) state.slowSpeedLights
+
                     else
                         speed :: state.slowSpeedLights
             }
@@ -115,9 +116,9 @@ view model signalType =
                 _ ->
                     g [] []
     in
-        svg [ version "1.1", viewBox "0 0 140 600", width "200", height "600" ]
-            [ Svg.style []
-                [ text """
+    svg [ version "1.1", viewBox "0 0 140 600", width "200", height "600" ]
+        [ Svg.style []
+            [ text """
                     circle { stroke-width: 0.4; stroke-opacity: 0.85; stroke: #333; }
                     .green { fill:url(#green-gradient) }
                     .green.on { filter: drop-shadow(0 0 5px #00bd4a) }
@@ -150,63 +151,64 @@ view model signalType =
                     .screw { stroke: none; fill: #49433d; opacity: 0.768}
                     .semaphoreAnimate { transition: transform 2s }
                     """
-                ]
-            , defs []
-                [ radialGradient [ id "green-gradient" ]
-                    [ stop [ stopColor "#33ff6d", offset "0.05" ] []
-                    , stop [ stopColor "#00bd4a", offset "0.9" ] []
-                    ]
-                , radialGradient [ id "red-gradient" ]
-                    [ stop [ stopColor "#ff3763", offset "0.05" ] []
-                    , stop [ stopColor "#da012a", offset "0.9" ] []
-                    ]
-                , radialGradient [ id "orange-gradient" ]
-                    [ stop [ stopColor "#ffc955", offset "0.05" ] []
-                    , stop [ stopColor "#fc8e00", offset "0.9" ] []
-                    ]
-                , radialGradient [ id "yellow-gradient" ]
-                    [ stop [ stopColor "#ffe060", offset "0.05" ] []
-                    , stop [ stopColor "#fac412", offset "0.9" ] []
-                    ]
-                , radialGradient [ id "white-gradient" ]
-                    [ stop [ stopColor "#fffaef", offset "0.05" ] []
-                    , stop [ stopColor "#ebe6d8", offset "0.9" ] []
-                    ]
-                ]
-            , g []
-                (case signalType of
-                    Ks ->
-                        [ zs3
-                        , g [ transform "translate(3, 65)" ]
-                            (model |> KsSignal.lights |> KsSignal.view)
-                        , g [ transform "translate(0, 168)" ] [ zs3v ]
-                        ]
-
-                    HvLight ->
-                        [ g [ transform "translate(19, 0)" ] [ zs3 ]
-                        , g [ transform "translate(3, 65)" ]
-                            (model |> HvLightSignal.lights |> HvLightSignal.view)
-                        , g [ transform "translate(19, 350)" ] [ zs3v ]
-                        ]
-
-                    HvSemaphore ->
-                        [ g [ transform "translate(3,65)" ]
-                            (model |> HvSemaphore.arms |> HvSemaphore.view)
-                        , g [ transform "translate(-22, 345)" ] [ zs3 ]
-                        , g [ transform "translate(100, 400)" ]
-                            (case model of
-                                DistantSignal state ->
-                                    if state.extraLight == Repeater then
-                                        []
-                                    else
-                                        [ zs3v ]
-
-                                _ ->
-                                    [ zs3v ]
-                            )
-                        ]
-
-                    Hl ->
-                        (model |> HlSignal.lights |> HlSignal.view)
-                )
             ]
+        , defs []
+            [ radialGradient [ id "green-gradient" ]
+                [ stop [ stopColor "#33ff6d", offset "0.05" ] []
+                , stop [ stopColor "#00bd4a", offset "0.9" ] []
+                ]
+            , radialGradient [ id "red-gradient" ]
+                [ stop [ stopColor "#ff3763", offset "0.05" ] []
+                , stop [ stopColor "#da012a", offset "0.9" ] []
+                ]
+            , radialGradient [ id "orange-gradient" ]
+                [ stop [ stopColor "#ffc955", offset "0.05" ] []
+                , stop [ stopColor "#fc8e00", offset "0.9" ] []
+                ]
+            , radialGradient [ id "yellow-gradient" ]
+                [ stop [ stopColor "#ffe060", offset "0.05" ] []
+                , stop [ stopColor "#fac412", offset "0.9" ] []
+                ]
+            , radialGradient [ id "white-gradient" ]
+                [ stop [ stopColor "#fffaef", offset "0.05" ] []
+                , stop [ stopColor "#ebe6d8", offset "0.9" ] []
+                ]
+            ]
+        , g []
+            (case signalType of
+                Ks ->
+                    [ zs3
+                    , g [ transform "translate(3, 65)" ]
+                        (model |> KsSignal.lights |> KsSignal.view)
+                    , g [ transform "translate(0, 168)" ] [ zs3v ]
+                    ]
+
+                HvLight ->
+                    [ g [ transform "translate(19, 0)" ] [ zs3 ]
+                    , g [ transform "translate(3, 65)" ]
+                        (model |> HvLightSignal.lights |> HvLightSignal.view)
+                    , g [ transform "translate(19, 350)" ] [ zs3v ]
+                    ]
+
+                HvSemaphore ->
+                    [ g [ transform "translate(3,65)" ]
+                        (model |> HvSemaphore.arms |> HvSemaphore.view)
+                    , g [ transform "translate(-22, 345)" ] [ zs3 ]
+                    , g [ transform "translate(100, 400)" ]
+                        (case model of
+                            DistantSignal state ->
+                                if state.extraLight == Repeater then
+                                    []
+
+                                else
+                                    [ zs3v ]
+
+                            _ ->
+                                [ zs3v ]
+                        )
+                    ]
+
+                Hl ->
+                    model |> HlSignal.lights |> HlSignal.view
+            )
+        ]

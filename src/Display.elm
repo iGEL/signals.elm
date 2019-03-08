@@ -1,9 +1,9 @@
-module Display exposing (..)
+module Display exposing (view)
 
-import Svg exposing (..)
-import Svg.Attributes exposing (..)
 import Lamp exposing (..)
 import Messages exposing (DisplayMsg)
+import Svg exposing (..)
+import Svg.Attributes exposing (..)
 
 
 view : String -> Messages.DisplayMsg -> Svg msg
@@ -64,13 +64,13 @@ view color msg =
                 Messages.Off ->
                     off
     in
-        g []
-            [ rect [ width "54", height "44", x "0", y "0", Svg.Attributes.style "fill:black; stroke: none" ] []
-            , g []
-                (List.concat
-                    (List.indexedMap (paintRow color) (center matrix))
-                )
-            ]
+    g []
+        [ rect [ width "54", height "44", x "0", y "0", Svg.Attributes.style "fill:black; stroke: none" ] []
+        , g []
+            (List.concat
+                (List.indexedMap (paintRow color) (center matrix))
+            )
+        ]
 
 
 paintRow : String -> Int -> List Bool -> List (Svg msg)
@@ -80,7 +80,7 @@ paintRow color x row =
 
 paintLamp : String -> Int -> Int -> Bool -> Svg msg
 paintLamp color x y on =
-    tinyLamp color on (toString (5 * y + 7)) (toString (5 * x + 7))
+    tinyLamp color on (String.fromInt (5 * y + 7)) (String.fromInt (5 * x + 7))
 
 
 center : List (List Bool) -> List (List Bool)
@@ -95,9 +95,9 @@ center matrix =
         pad =
             List.repeat colsToPad False
     in
-        List.map
-            (\row -> List.append pad (List.append row pad))
-            matrix
+    List.map
+        (\row -> List.append pad (List.append row pad))
+        matrix
 
 
 concat : List (List Bool) -> List (List Bool) -> List (List Bool)
@@ -106,7 +106,7 @@ concat first second =
         mergeLine =
             \a b -> List.append a (False :: b)
     in
-        List.map2 mergeLine first second
+    List.map2 mergeLine first second
 
 
 off : List (List Bool)

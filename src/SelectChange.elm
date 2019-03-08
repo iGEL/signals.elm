@@ -1,7 +1,7 @@
 module SelectChange exposing (onSelectChange)
 
-import Json.Decode
 import Html.Events
+import Json.Decode
 
 
 onSelectChange msg =

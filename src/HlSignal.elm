@@ -1,8 +1,8 @@
 module HlSignal exposing (lights, view)
 
 import Lamp
-import SignalModel
 import Messages
+import SignalModel
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 
@@ -44,9 +44,9 @@ combinationSignalFromMain mainSignalState =
         setToProceed state =
             { state | aspect = Messages.Proceed }
     in
-        { mainSignal = mainSignalState
-        , distantSignal = setToProceed SignalModel.defaultStateModel
-        }
+    { mainSignal = mainSignalState
+    , distantSignal = setToProceed SignalModel.defaultStateModel
+    }
 
 
 topOrangeLight : SignalModel.Model -> Lamp.State
@@ -60,23 +60,26 @@ topOrangeLight model =
         fromState state =
             if SignalModel.isStopState state then
                 Lamp.On
+
             else if isReducedSpeedState state then
                 Lamp.Blinking
+
             else
                 Lamp.Off
     in
-        case model of
-            SignalModel.DistantSignal state ->
-                fromState state
+    case model of
+        SignalModel.DistantSignal state ->
+            fromState state
 
-            SignalModel.MainSignal _ ->
-                Lamp.Absent
+        SignalModel.MainSignal _ ->
+            Lamp.Absent
 
-            SignalModel.CombinationSignal states ->
-                if SignalModel.isStopState states.mainSignal then
-                    Lamp.Off
-                else
-                    fromState states.distantSignal
+        SignalModel.CombinationSignal states ->
+            if SignalModel.isStopState states.mainSignal then
+                Lamp.Off
+
+            else
+                fromState states.distantSignal
 
 
 greenLight : SignalModel.Model -> Lamp.State
@@ -88,27 +91,30 @@ greenLight model =
         distantFromState state =
             if SignalModel.isStopState state || speedIsReducedToLessThanHunderedState state then
                 Lamp.Off
+
             else if state.speedLimit == Just 10 && List.member 10 state.slowSpeedLights then
                 Lamp.Blinking
+
             else
                 Lamp.On
 
         combinedFromState states =
             if SignalModel.isStopState states.mainSignal then
                 Lamp.Off
+
             else
                 distantFromState states.distantSignal
     in
-        case model of
-            SignalModel.DistantSignal state ->
-                distantFromState state
+    case model of
+        SignalModel.DistantSignal state ->
+            distantFromState state
 
-            SignalModel.MainSignal state ->
-                combinationSignalFromMain state
-                    |> combinedFromState
+        SignalModel.MainSignal state ->
+            combinationSignalFromMain state
+                |> combinedFromState
 
-            SignalModel.CombinationSignal states ->
-                combinedFromState states
+        SignalModel.CombinationSignal states ->
+            combinedFromState states
 
 
 topWhiteLight : SignalModel.Model -> Lamp.State
@@ -117,20 +123,22 @@ topWhiteLight model =
         fromState state =
             if not state.hasRa12 then
                 Lamp.Absent
+
             else if state.aspect == Messages.StopAndRa12 then
                 Lamp.On
+
             else
                 Lamp.Off
     in
-        case model of
-            SignalModel.DistantSignal _ ->
-                Lamp.Absent
+    case model of
+        SignalModel.DistantSignal _ ->
+            Lamp.Absent
 
-            SignalModel.MainSignal state ->
-                fromState state
+        SignalModel.MainSignal state ->
+            fromState state
 
-            SignalModel.CombinationSignal states ->
-                fromState states.mainSignal
+        SignalModel.CombinationSignal states ->
+            fromState states.mainSignal
 
 
 redLight : SignalModel.Model -> Lamp.State
@@ -139,18 +147,19 @@ redLight model =
         fromState state =
             if SignalModel.isStopState state then
                 Lamp.On
+
             else
                 Lamp.Off
     in
-        case model of
-            SignalModel.DistantSignal _ ->
-                Lamp.Absent
+    case model of
+        SignalModel.DistantSignal _ ->
+            Lamp.Absent
 
-            SignalModel.MainSignal state ->
-                fromState state
+        SignalModel.MainSignal state ->
+            fromState state
 
-            SignalModel.CombinationSignal states ->
-                fromState states.mainSignal
+        SignalModel.CombinationSignal states ->
+            fromState states.mainSignal
 
 
 bottomWhiteLight : SignalModel.Model -> Lamp.State
@@ -159,22 +168,25 @@ bottomWhiteLight model =
         fromState state =
             if not state.hasZs1 && not state.hasRa12 then
                 Lamp.Absent
+
             else if state.aspect == Messages.StopAndZs1 then
                 Lamp.Blinking
+
             else if state.aspect == Messages.StopAndRa12 then
                 Lamp.On
+
             else
                 Lamp.Off
     in
-        case model of
-            SignalModel.DistantSignal _ ->
-                Lamp.Absent
+    case model of
+        SignalModel.DistantSignal _ ->
+            Lamp.Absent
 
-            SignalModel.MainSignal state ->
-                fromState state
+        SignalModel.MainSignal state ->
+            fromState state
 
-            SignalModel.CombinationSignal states ->
-                fromState states.mainSignal
+        SignalModel.CombinationSignal states ->
+            fromState states.mainSignal
 
 
 bottomOrangeLight : SignalModel.Model -> Lamp.State
@@ -189,18 +201,19 @@ bottomOrangeLight model =
         fromState state =
             if SignalModel.isProceedState state && isReducedSpeedState state then
                 Lamp.On
+
             else
                 Lamp.Off
     in
-        case model of
-            SignalModel.DistantSignal _ ->
-                Lamp.Absent
+    case model of
+        SignalModel.DistantSignal _ ->
+            Lamp.Absent
 
-            SignalModel.MainSignal state ->
-                fromState state
+        SignalModel.MainSignal state ->
+            fromState state
 
-            SignalModel.CombinationSignal states ->
-                fromState states.mainSignal
+        SignalModel.CombinationSignal states ->
+            fromState states.mainSignal
 
 
 secondaryRedLight : SignalModel.Model -> Lamp.State
@@ -223,20 +236,22 @@ stripe model speed =
             if List.member speed state.slowSpeedLights then
                 if SignalModel.isProceedState state && state.speedLimit == Just speed then
                     Lamp.On
+
                 else
                     Lamp.Off
+
             else
                 Lamp.Absent
     in
-        case model of
-            SignalModel.DistantSignal _ ->
-                Lamp.Absent
+    case model of
+        SignalModel.DistantSignal _ ->
+            Lamp.Absent
 
-            SignalModel.MainSignal state ->
-                fromState state
+        SignalModel.MainSignal state ->
+            fromState state
 
-            SignalModel.CombinationSignal states ->
-                fromState states.mainSignal
+        SignalModel.CombinationSignal states ->
+            fromState states.mainSignal
 
 
 view : Model -> List (Svg msg)
@@ -248,42 +263,45 @@ view model =
         greenStripeYPos =
             if model.orangeStripe == Lamp.Absent then
                 "227"
+
             else
                 "200"
     in
-        [ g [ class "hlSignal" ]
-            (List.filterMap
-                identity
-                [ Just
-                    (Svg.path
-                        [ d
-                            (if model.redLight == Lamp.Absent then
-                                "M -0,9 8,0 62,0 l 9,9 0,122 -72,0 z"
-                             else
-                                "M 0,9 8,0 62,0 l 9,9 0,175 -72,0 z"
-                            )
-                        ]
-                        []
-                    )
-                , Lamp.maybeBigLamp model.topOrangeLight "orange" "20" "30"
-                , Lamp.maybeBigLamp model.greenLight "green" "50" "30"
-                , Lamp.maybeSmallLamp model.topWhiteLight "white" "53" "63"
-                , Lamp.maybeBigLamp model.redLight "red" "35" "82"
-                , Lamp.maybeSmallLamp model.bottomWhiteLight "white" "14" "99"
-                , Lamp.maybeBigLamp model.bottomOrangeLight "orange" "20" "136"
-                , Lamp.maybeBigLamp model.secondaryRedLight "red" "50" "136"
-                , if model.greenStripe == Lamp.Absent && model.orangeStripe == Lamp.Absent then
-                    Nothing
-                  else
-                    Just (rect [ height "62", width "71", x "0", y "185" ] [])
-                , Lamp.maybeSmallLamp model.greenStripe "green" "8" greenStripeYPos
-                , Lamp.maybeSmallLamp model.greenStripe "green" "27" greenStripeYPos
-                , Lamp.maybeSmallLamp model.greenStripe "green" "45" greenStripeYPos
-                , Lamp.maybeSmallLamp model.greenStripe "green" "63" greenStripeYPos
-                , Lamp.maybeSmallLamp model.orangeStripe "orange" "8" "227"
-                , Lamp.maybeSmallLamp model.orangeStripe "orange" "27" "227"
-                , Lamp.maybeSmallLamp model.orangeStripe "orange" "45" "227"
-                , Lamp.maybeSmallLamp model.orangeStripe "orange" "63" "227"
-                ]
-            )
-        ]
+    [ g [ class "hlSignal" ]
+        (List.filterMap
+            identity
+            [ Just
+                (Svg.path
+                    [ d
+                        (if model.redLight == Lamp.Absent then
+                            "M -0,9 8,0 62,0 l 9,9 0,122 -72,0 z"
+
+                         else
+                            "M 0,9 8,0 62,0 l 9,9 0,175 -72,0 z"
+                        )
+                    ]
+                    []
+                )
+            , Lamp.maybeBigLamp model.topOrangeLight "orange" "20" "30"
+            , Lamp.maybeBigLamp model.greenLight "green" "50" "30"
+            , Lamp.maybeSmallLamp model.topWhiteLight "white" "53" "63"
+            , Lamp.maybeBigLamp model.redLight "red" "35" "82"
+            , Lamp.maybeSmallLamp model.bottomWhiteLight "white" "14" "99"
+            , Lamp.maybeBigLamp model.bottomOrangeLight "orange" "20" "136"
+            , Lamp.maybeBigLamp model.secondaryRedLight "red" "50" "136"
+            , if model.greenStripe == Lamp.Absent && model.orangeStripe == Lamp.Absent then
+                Nothing
+
+              else
+                Just (rect [ height "62", width "71", x "0", y "185" ] [])
+            , Lamp.maybeSmallLamp model.greenStripe "green" "8" greenStripeYPos
+            , Lamp.maybeSmallLamp model.greenStripe "green" "27" greenStripeYPos
+            , Lamp.maybeSmallLamp model.greenStripe "green" "45" greenStripeYPos
+            , Lamp.maybeSmallLamp model.greenStripe "green" "63" greenStripeYPos
+            , Lamp.maybeSmallLamp model.orangeStripe "orange" "8" "227"
+            , Lamp.maybeSmallLamp model.orangeStripe "orange" "27" "227"
+            , Lamp.maybeSmallLamp model.orangeStripe "orange" "45" "227"
+            , Lamp.maybeSmallLamp model.orangeStripe "orange" "63" "227"
+            ]
+        )
+    ]

@@ -1,4 +1,4 @@
-module Ne2 exposing (..)
+module Ne2 exposing (ne2)
 
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
@@ -10,6 +10,7 @@ ne2 semaphoreShortendBreakPath =
         (List.append
             (if semaphoreShortendBreakPath then
                 [ Svg.path [ d "m1,-23 17,20 17,-20 z", class "ral9002", Svg.Attributes.style "stroke:#0e0e10;stroke-width:2" ] [] ]
+
              else
                 []
             )

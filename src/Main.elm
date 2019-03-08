@@ -1,7 +1,8 @@
-module Main exposing (..)
+module Main exposing (main)
 
-import Html exposing (div, button, label, input, text, table, tr, th, td, select, option, span)
-import Html.Attributes exposing (style, type_, checked, disabled, value)
+import Browser
+import Html exposing (button, div, input, label, option, select, span, table, td, text, th, tr)
+import Html.Attributes exposing (checked, disabled, style, type_, value)
 import Html.Events exposing (onClick)
 import Messages exposing (..)
 import SelectChange exposing (..)
@@ -32,18 +33,18 @@ type alias Model =
     }
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , view = view
         , update = update
-        , subscriptions = (\n -> Sub.none)
+        , subscriptions = \n -> Sub.none
         }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : () -> ( Model, Cmd Msg )
+init ignore =
     ( { distantSignal = SignalModel.distantSignal
       , signalRepeater = SignalModel.signalRepeater
       , combinationSignal = SignalModel.combinationSignal
@@ -69,13 +70,13 @@ update msg model =
                 newCombinationSignal =
                     Signal.update (ToMainSignal signalmsg) model.combinationSignal
             in
-                ( { model
-                    | distantSignal = newDistantSignal
-                    , signalRepeater = newSignalRepeater
-                    , combinationSignal = newCombinationSignal
-                  }
-                , Cmd.none
-                )
+            ( { model
+                | distantSignal = newDistantSignal
+                , signalRepeater = newSignalRepeater
+                , combinationSignal = newCombinationSignal
+              }
+            , Cmd.none
+            )
 
         SecondSignalMsg signalmsg ->
             let
@@ -85,12 +86,12 @@ update msg model =
                 newMainSignal =
                     Signal.update (ToMainSignal signalmsg) model.mainSignal
             in
-                ( { model
-                    | combinationSignal = newCombinationSignal
-                    , mainSignal = newMainSignal
-                  }
-                , Cmd.none
-                )
+            ( { model
+                | combinationSignal = newCombinationSignal
+                , mainSignal = newMainSignal
+              }
+            , Cmd.none
+            )
 
         SetSignalType signalType ->
             ( { model | signalType = signalType }, Cmd.none )
@@ -145,7 +146,7 @@ view model =
                 , text "Hl"
                 ]
             ]
-        , table [ style [ ( "margin", "20px" ) ] ]
+        , table [ style "margin" "20px" ]
             [ tr []
                 [ th [] [ translate model "Vorsignal" "Distant Signal" ]
                 , th [] [ translate model "Vorsignalwiederholer" "Signal Repeater" ]
@@ -157,11 +158,11 @@ view model =
                     [ distantSignalOptions FirstSignalMsg model.distantSignal model
                     ]
                 , td [] []
-                , td [ style [ ( "text-align", "center" ) ] ]
+                , td [ style "text-align" "center" ]
                     [ mainSignalOptions FirstSignalMsg model.combinationSignal model
                     , distantSignalOptions SecondSignalMsg model.combinationSignal model
                     ]
-                , td [ style [ ( "text-align", "center" ) ] ]
+                , td [ style "text-align" "center" ]
                     [ mainSignalOptions SecondSignalMsg model.mainSignal model ]
                 ]
             , tr []
@@ -212,6 +213,7 @@ mainSignalOptions targetSignal signal model =
                         , translate model "Grüner Streifen (100 km/h)" "Green stripe (100 km/h)"
                         ]
                     ]
+
               else
                 span []
                     [ label []
@@ -251,6 +253,7 @@ mainSignalOptions targetSignal signal model =
                                 []
                             , translate model "Langsamfahrt" "Proceed slowly"
                             ]
+
                       else
                         span [] []
                     ]
@@ -272,6 +275,7 @@ mainSignalOptions targetSignal signal model =
             }
         , if model.signalType == SignalModel.Hl then
             span [] []
+
           else
             optionWithButton
                 { toggleActive = SignalModel.hasZs7 signal
@@ -325,7 +329,6 @@ speedDropdown targetSignal speedOptions selectedSpeed =
             (\selectedValue ->
                 selectedValue
                     |> String.toInt
-                    |> Result.toMaybe
                     |> SetSpeedLimit
                     |> targetSignal
             )
@@ -339,9 +342,9 @@ speedDropdown targetSignal speedOptions selectedSpeed =
 
                     Just speed ->
                         option
-                            [ value (toString speed), Html.Attributes.selected (selectedSpeed == Just speed) ]
+                            [ value (String.fromInt speed), Html.Attributes.selected (selectedSpeed == Just speed) ]
                             [ text
-                                ((toString (speed * 10)) ++ " km/h")
+                                (String.fromInt (speed * 10) ++ " km/h")
                             ]
             )
             speedOptions
