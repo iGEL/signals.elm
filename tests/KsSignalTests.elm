@@ -1,4 +1,4 @@
-module KsSignalTests exposing (..)
+module KsSignalTests exposing (all)
 
 import Expect
 import KsSignal

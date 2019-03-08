@@ -1,4 +1,4 @@
-module HvLightSignal exposing (hpZs1Lights, hpZs7Lights, lights, view, zs1AndZs7View)
+module HvLightSignal exposing (Model, hpZs1Lights, hpZs7Lights, lights, view, zs1AndZs7View)
 
 import Lamp
 import Messages exposing (..)

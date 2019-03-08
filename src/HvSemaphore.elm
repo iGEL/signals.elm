@@ -1,4 +1,4 @@
-module HvSemaphore exposing (view)
+module HvSemaphore exposing (Model, arms, view)
 
 import Arm
 import HvLightSignal exposing (hpZs1Lights, hpZs7Lights)

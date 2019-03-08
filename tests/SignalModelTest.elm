@@ -1,10 +1,10 @@
-module SignalModelTest exposing (..)
+module SignalModelTest exposing (all)
 
 import Expect
-import Test exposing (..)
-import SignalModel
-import Signal
 import Messages exposing (..)
+import Signal
+import SignalModel
+import Test exposing (..)
 
 
 all : Test
